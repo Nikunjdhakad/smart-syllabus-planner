@@ -1,36 +1,72 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Smart Syllabus Planner
 
-## Getting Started
+AI-powered academic planning for students — syllabus organization, study schedules, progress tracking, revisions, and an AI assistant.
 
-First, run the development server:
+## Stack
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- **Frontend:** Next.js 16, Tailwind CSS, shadcn/ui
+- **Backend:** Next.js API Routes
+- **Database:** MongoDB Atlas (Mongoose)
+- **Auth:** JWT sessions (httpOnly cookies) + bcrypt
+- **AI (later):** Google Gemini API
+
+## Getting started
+
+1. **Install dependencies**
+
+   ```bash
+   npm install
+   ```
+
+2. **Environment variables**
+
+   Copy `.env.example` to `.env.local` and fill in:
+
+   - `MONGODB_URI` — MongoDB Atlas connection string
+   - `JWT_SECRET` — long random secret (32+ characters)
+   - `GEMINI_API_KEY` — optional until AI features are built
+
+3. **Run the dev server**
+
+   ```bash
+   npm run dev
+   ```
+
+   Open [http://localhost:3000](http://localhost:3000).
+
+## Project structure
+
+```
+src/
+├── app/
+│   ├── (auth)/          # Login & register
+│   ├── (dashboard)/     # Protected app screens
+│   └── api/             # REST API routes
+├── components/          # UI & layout
+├── lib/                 # DB, auth, utilities
+├── models/              # Mongoose schemas
+└── types/               # Shared TypeScript types
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## API (base)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Method | Route                | Description        |
+|--------|----------------------|--------------------|
+| GET    | `/api/health`        | Health check       |
+| POST   | `/api/auth/register` | Create account     |
+| POST   | `/api/auth/login`    | Sign in            |
+| POST   | `/api/auth/logout`   | Sign out           |
+| GET    | `/api/auth/me`       | Current user       |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Build phases (planned)
 
-## Learn More
+1. **Base** — auth, DB models, navigation, placeholders *(current)*
+2. Syllabus upload & AI extraction
+3. Study planner generation
+4. Progress tracking & analytics
+5. Revision scheduling
+6. AI assistant & dynamic rescheduling
 
-To learn more about Next.js, take a look at the following resources:
+## Deploy
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Deploy to [Vercel](https://vercel.com) and set the same environment variables in the project settings.
