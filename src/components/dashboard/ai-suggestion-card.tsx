@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Bot, BookOpen, CalendarCheck, LifeBuoy, RotateCcw } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -43,12 +43,13 @@ export function AiSuggestionCard() {
             </Link>
           ))}
         </div>
-        <Button asChild size="sm" className="w-full sm:w-auto">
-          <Link href={ROUTES.assistant}>
-            <Bot className="size-4" aria-hidden />
-            Open assistant
-          </Link>
-        </Button>
+        <Link
+          href={ROUTES.assistant}
+          className={buttonVariants({ size: "sm", className: "w-full sm:w-auto" })}
+        >
+          <Bot className="size-4" aria-hidden />
+          Open assistant
+        </Link>
       </CardContent>
     </Card>
   );
