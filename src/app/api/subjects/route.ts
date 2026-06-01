@@ -1,7 +1,9 @@
 import { getSession } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
 import { handleApiError, jsonError, jsonSuccess } from "@/lib/api";
+import { createSubjectSchema } from "@/lib/validations/subject";
 import Subject from "@/models/Subject";
+import Syllabus from "@/models/Syllabus";
 import Topic from "@/models/Topic";
 
 export async function GET(request: Request) {
@@ -53,6 +55,47 @@ export async function GET(request: Request) {
         })),
       })),
     });
+  } catch (error) {
+    return handleApiError(error);
+  }
+}
+
+export async function POST(request: Request) {
+  try {
+    const session = await getSession();
+    if (!session) {
+      return jsonError("Unauthorized", 401);
+    }
+
+    const body = createSubjectSchema.parse(await request.json());
+    await connectDB();
+
+    // Verify the syllabus belongs to the user
+    const syllabus = await Syllabus.findOne({
+      syllabusId: body.syllabusId,
+      userId: session.userId,
+    });
+    if (!syllabus) {
+      return jsonError("Syllabus not found", 404);
+    }
+
+    const subject = await Subject.create({
+      userId: session.userId,
+      syllabusId: body.syllabusId,
+      subjectName: body.subjectName,
+    });
+
+    return jsonSuccess(
+      {
+        subject: {
+          subjectId: subject.subjectId,
+          syllabusId: subject.syllabusId,
+          subjectName: subject.subjectName,
+          topics: [],
+        },
+      },
+      201,
+    );
   } catch (error) {
     return handleApiError(error);
   }
