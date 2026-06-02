@@ -1,56 +1,57 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Bot, Loader2 } from "lucide-react";
-
-import { Card, CardContent } from "@/components/ui/card";
+import { Bot, Sparkles } from "lucide-react";
 import { ChatInput } from "@/components/assistant/chat-input";
 import { ChatMessage, type Message } from "@/components/assistant/chat-message";
 import { QuickActions } from "@/components/assistant/quick-actions";
 import { cn } from "@/lib/utils";
 
-async function readApiError(response: Response): Promise<string> {
+async function readApiError(res: Response): Promise<string> {
   try {
-    const body = await response.json();
-    return typeof body.error === "string" ? body.error : "Request failed";
-  } catch {
-    return "Request failed";
-  }
+    const b = await res.json();
+    return typeof b.error === "string" ? b.error : "Request failed";
+  } catch { return "Request failed"; }
 }
 
 function TypingIndicator() {
   return (
-    <div className="flex gap-3">
-      <div className="flex size-8 shrink-0 items-center justify-center rounded-full border border-border/60 bg-muted text-muted-foreground">
-        <Bot className="size-4" aria-hidden />
+    <div className="flex gap-3 fade-in-up">
+      <div className="flex size-8 shrink-0 items-center justify-center rounded-xl border border-border/60 bg-primary/10 text-primary">
+        <Bot className="size-4" />
       </div>
-      <div className="flex items-center gap-1 rounded-2xl rounded-tl-sm border border-border/60 bg-card px-4 py-3">
-        <Loader2 className="size-4 animate-spin text-muted-foreground" aria-label="Assistant is typing" />
-        <span className="text-xs text-muted-foreground">Thinking…</span>
+      <div className="flex items-center gap-1.5 rounded-2xl rounded-tl-sm border border-border/60 bg-card px-4 py-3">
+        <span className="typing-dot size-2 rounded-full bg-primary/60" />
+        <span className="typing-dot size-2 rounded-full bg-primary/60" />
+        <span className="typing-dot size-2 rounded-full bg-primary/60" />
       </div>
     </div>
   );
 }
 
-function EmptyState({ onSelect }: { onSelect: (text: string) => void }) {
+function EmptyState({ onSelect }: { onSelect: (t: string) => void }) {
   return (
-    <div className="flex flex-col items-center gap-4 py-10 text-center">
+    <div className="flex flex-col items-center justify-center gap-6 py-12 text-center">
+      {/* Icon */}
       <div className="relative">
-        <div className="absolute inset-0 rounded-2xl bg-primary/20 blur-xl" aria-hidden />
-        <div className="relative flex size-14 items-center justify-center rounded-2xl border border-primary/10 bg-gradient-to-br from-primary/15 to-primary/5 text-primary">
-          <Bot className="size-7" strokeWidth={1.75} />
+        <div className="absolute inset-0 rounded-3xl bg-primary/20 blur-2xl" aria-hidden />
+        <div className="relative flex size-20 items-center justify-center rounded-3xl border border-primary/20 bg-gradient-to-br from-primary/20 to-primary/5">
+          <Bot className="size-9 text-primary" strokeWidth={1.5} />
         </div>
       </div>
-      <div>
-        <p className="font-semibold">Your AI study assistant</p>
-        <p className="mt-1 max-w-xs text-sm text-muted-foreground">
-          Ask me anything about your syllabus, study plan, or exam prep. I have
-          access to all your academic data.
+
+      <div className="max-w-sm space-y-2">
+        <div className="flex items-center justify-center gap-2">
+          <Sparkles className="size-4 text-primary" />
+          <h2 className="font-bold text-lg">AI Study Assistant</h2>
+        </div>
+        <p className="text-sm leading-relaxed text-muted-foreground">
+          Ask anything about your syllabus, study plan, or exam prep.
+          I have access to all your academic data.
         </p>
       </div>
-      <div className="w-full max-w-md">
-        <QuickActions onSelect={onSelect} />
-      </div>
+
+      <QuickActions onSelect={onSelect} />
     </div>
   );
 }
@@ -63,12 +64,10 @@ export function ChatWindow({ initialQuestion }: { initialQuestion?: string }) {
   const bottomRef = useRef<HTMLDivElement>(null);
   const initialSent = useRef(false);
 
-  // Auto-scroll to bottom when messages change
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
 
-  // Auto-send initial question from ?q= param (once only)
   useEffect(() => {
     if (initialQuestion && !initialSent.current) {
       initialSent.current = true;
@@ -81,47 +80,27 @@ export function ChatWindow({ initialQuestion }: { initialQuestion?: string }) {
     const trimmed = text.trim();
     if (!trimmed || loading) return;
 
-    const userMessage: Message = {
-      id: crypto.randomUUID(),
-      role: "user",
-      content: trimmed,
-    };
-
-    setMessages((prev) => [...prev, userMessage]);
+    const userMsg: Message = { id: crypto.randomUUID(), role: "user", content: trimmed };
+    setMessages((p) => [...p, userMsg]);
     setInput("");
     setLoading(true);
     setError(null);
 
-    // Build history from current messages (exclude the one we just added)
     const history = messages.map((m) => ({ role: m.role, content: m.content }));
 
     try {
-      const response = await fetch("/api/assistant/chat", {
+      const res = await fetch("/api/assistant/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: trimmed, history }),
       });
-
-      if (!response.ok) {
-        throw new Error(await readApiError(response));
-      }
-
-      const body = await response.json();
+      if (!res.ok) throw new Error(await readApiError(res));
+      const body = await res.json();
       const reply = body.data?.reply as string;
-
-      if (!reply) {
-        throw new Error("No response received from assistant");
-      }
-
-      const assistantMessage: Message = {
-        id: crypto.randomUUID(),
-        role: "assistant",
-        content: reply,
-      };
-
-      setMessages((prev) => [...prev, assistantMessage]);
+      if (!reply) throw new Error("No response received");
+      setMessages((p) => [...p, { id: crypto.randomUUID(), role: "assistant", content: reply }]);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+      setError(err instanceof Error ? err.message : "Something went wrong.");
     } finally {
       setLoading(false);
     }
@@ -130,44 +109,38 @@ export function ChatWindow({ initialQuestion }: { initialQuestion?: string }) {
   const hasMessages = messages.length > 0;
 
   return (
-    <div className="flex h-full flex-col gap-4">
+    <div className="flex h-[calc(100vh-10rem)] min-h-[500px] flex-col gap-3">
       {/* Message area */}
-      <Card className="flex-1 overflow-hidden border-border/60 bg-card/80 shadow-sm backdrop-blur-sm">
-        <CardContent
-          className={cn(
-            "flex h-full flex-col overflow-y-auto p-4",
-            !hasMessages && "justify-center",
-          )}
-          style={{ minHeight: "400px", maxHeight: "60vh" }}
-        >
-          {!hasMessages ? (
-            <EmptyState onSelect={(text) => void sendMessage(text)} />
-          ) : (
-            <div className="space-y-4">
-              {messages.map((msg) => (
-                <ChatMessage key={msg.id} message={msg} />
-              ))}
-              {loading && <TypingIndicator />}
-              <div ref={bottomRef} />
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      <div
+        className={cn(
+          "flex-1 overflow-y-auto rounded-2xl border border-border/60 bg-card/50 backdrop-blur-sm",
+          !hasMessages && "flex items-center justify-center",
+        )}
+      >
+        {!hasMessages ? (
+          <EmptyState onSelect={(t) => void sendMessage(t)} />
+        ) : (
+          <div className="space-y-4 p-5">
+            {messages.map((msg) => (
+              <ChatMessage key={msg.id} message={msg} />
+            ))}
+            {loading && <TypingIndicator />}
+            <div ref={bottomRef} />
+          </div>
+        )}
+      </div>
 
       {/* Error */}
-      {error ? (
-        <p
-          className="rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive"
-          role="alert"
-        >
+      {error && (
+        <p className="rounded-xl border border-destructive/30 bg-destructive/8 px-4 py-2.5 text-sm text-destructive" role="alert">
           {error}
         </p>
-      ) : null}
+      )}
 
-      {/* Quick actions (shown below chat when there are messages) */}
-      {hasMessages && !loading ? (
-        <QuickActions onSelect={(text) => void sendMessage(text)} />
-      ) : null}
+      {/* Quick actions when chatting */}
+      {hasMessages && !loading && (
+        <QuickActions onSelect={(t) => void sendMessage(t)} />
+      )}
 
       {/* Input */}
       <ChatInput

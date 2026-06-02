@@ -10,6 +10,7 @@ import {
   LayoutDashboard,
   LineChart,
   RotateCcw,
+  ShieldAlert,
 } from "lucide-react";
 
 import { ROUTES } from "@/lib/constants";
@@ -25,6 +26,7 @@ export const sidebarNavItems: {
   { href: ROUTES.planner, label: "Study Planner", icon: CalendarDays },
   { href: ROUTES.progress, label: "Progress", icon: LineChart },
   { href: ROUTES.revisions, label: "Revisions", icon: RotateCcw },
+  { href: ROUTES.recovery, label: "Recovery Center", icon: ShieldAlert },
   { href: ROUTES.assistant, label: "AI Assistant", icon: Bot },
 ];
 
@@ -38,10 +40,9 @@ export function SidebarNav({
   const pathname = usePathname();
 
   return (
-    <nav className={cn("flex flex-col gap-0.5", className)}>
+    <nav className={cn("flex flex-col gap-0.5", className)} aria-label="Main navigation">
       {sidebarNavItems.map(({ href, label, icon: Icon }) => {
-        const active =
-          pathname === href || pathname.startsWith(`${href}/`);
+        const active = pathname === href || pathname.startsWith(`${href}/`);
 
         return (
           <Link
@@ -49,27 +50,28 @@ export function SidebarNav({
             href={href}
             onClick={onNavigate}
             className={cn(
-              "group relative flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-medium transition-all",
+              "group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200",
               active
-                ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-sm"
-                : "text-sidebar-foreground/75 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground",
+                ? "bg-primary/15 text-primary shadow-sm"
+                : "text-muted-foreground hover:bg-white/5 hover:text-foreground",
             )}
           >
-            {active ? (
+            {active && (
               <span
-                className="absolute left-0 top-1/2 h-5 w-0.5 -translate-y-1/2 rounded-full bg-primary"
+                className="absolute left-0 top-1/2 h-5 w-0.5 -translate-y-1/2 rounded-full bg-primary shadow-sm shadow-primary/50"
                 aria-hidden
               />
-            ) : null}
+            )}
             <Icon
               className={cn(
-                "size-4 shrink-0 transition-colors",
-                active
-                  ? "text-primary"
-                  : "text-muted-foreground group-hover:text-foreground",
+                "size-4 shrink-0 transition-colors duration-200",
+                active ? "text-primary" : "text-muted-foreground/70 group-hover:text-foreground",
               )}
             />
-            {label}
+            <span className="truncate">{label}</span>
+            {label === "AI Assistant" && (
+              <span className="ml-auto flex size-1.5 rounded-full bg-primary/60" aria-hidden />
+            )}
           </Link>
         );
       })}

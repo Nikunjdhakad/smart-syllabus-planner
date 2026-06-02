@@ -20,7 +20,9 @@ export default async function AssistantPage({
       title="AI study assistant"
       description="Ask study questions, get daily suggestions, and emergency recovery plans."
     >
-      <ChatWindow initialQuestion={initialQuestion} />
+      <div className="page-enter">
+        <ChatWindow initialQuestion={initialQuestion} />
+      </div>
     </DashboardShell>
   );
 }

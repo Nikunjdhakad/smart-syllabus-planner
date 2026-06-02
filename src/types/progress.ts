@@ -39,6 +39,7 @@ export type ProgressMetrics = {
 
 export type SubjectProgressSlice = {
   subjectId: string;
+  subjectName: string;
   totalTasks: number;
   completedTasks: number;
   completionPercentage: number;

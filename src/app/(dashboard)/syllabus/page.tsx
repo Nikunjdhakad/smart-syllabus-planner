@@ -3,9 +3,7 @@ import type { Metadata } from "next";
 import { DashboardShell } from "@/components/layout/dashboard-shell";
 import { SyllabusManager } from "@/components/syllabus/syllabus-manager";
 
-export const metadata: Metadata = {
-  title: "Syllabus",
-};
+export const metadata: Metadata = { title: "Syllabus" };
 
 export default function SyllabusPage() {
   return (
@@ -13,7 +11,9 @@ export default function SyllabusPage() {
       title="Syllabus"
       description="Upload PDFs, images, or paste text. AI extracts subjects and topics automatically."
     >
-      <SyllabusManager />
+      <div className="page-enter">
+        <SyllabusManager />
+      </div>
     </DashboardShell>
   );
 }

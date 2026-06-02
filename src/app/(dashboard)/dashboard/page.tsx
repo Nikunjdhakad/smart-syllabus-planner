@@ -9,10 +9,11 @@ import {
   ListTodo,
   RotateCcw,
   Target,
+  ShieldAlert,
 } from "lucide-react";
 
 import { AiSuggestionCard } from "@/components/dashboard/ai-suggestion-card";
-import { RecoveryPanel } from "@/components/dashboard/recovery-panel";
+import { OverdueAlertBanner } from "@/components/dashboard/overdue-alert-banner";
 import { RevisionOverview } from "@/components/dashboard/revision-overview";
 import { UpcomingTasks } from "@/components/dashboard/upcoming-tasks";
 import { getSession } from "@/lib/auth";
@@ -25,130 +26,166 @@ import { DashboardShell } from "@/components/layout/dashboard-shell";
 import { FeatureCard } from "@/components/shared/feature-card";
 import { StatCard } from "@/components/shared/stat-card";
 import User from "@/models/User";
+import StudyPlan from "@/models/StudyPlan";
 
-export const metadata: Metadata = {
-  title: "Dashboard",
-};
-
+export const metadata: Metadata = { title: "Dashboard" };
 export const dynamic = "force-dynamic";
+
+function getReadinessScore(completionPct: number, streak: number, missedCount: number): number {
+  const base = completionPct * 0.6;
+  const streakBonus = Math.min(streak * 2, 20);
+  const missedPenalty = Math.min(missedCount * 3, 20);
+  return Math.max(0, Math.min(100, Math.round(base + streakBonus - missedPenalty)));
+}
+
+function getReadinessLabel(score: number): { label: string; color: string } {
+  if (score >= 80) return { label: "Exam Ready", color: "text-emerald-400" };
+  if (score >= 60) return { label: "On Track", color: "text-primary" };
+  if (score >= 40) return { label: "Needs Focus", color: "text-amber-400" };
+  return { label: "Behind Schedule", color: "text-destructive" };
+}
+
+function getDaysUntilExam(examDate: Date | null | undefined): number | null {
+  if (!examDate) return null;
+  const diff = Math.ceil((new Date(examDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+  return diff > 0 ? diff : null;
+}
 
 export default async function DashboardPage() {
   const session = await getSession();
   await connectDB();
 
-  const [user, summary, revisions, recovery] = await Promise.all([
-    session
-      ? User.findOne({ userId: session.userId }).lean()
-      : Promise.resolve(null),
+  const [user, summary, revisions, recovery, activePlan] = await Promise.all([
+    session ? User.findOne({ userId: session.userId }).lean() : null,
     session ? getProgressSummary(session.userId) : null,
     session ? getRevisionDashboardBuckets(session.userId) : null,
     session ? getRecoveryDashboardData(session.userId) : null,
+    session ? StudyPlan.findOne({ userId: session.userId, status: "active" }).lean() : null,
   ]);
 
   const firstName = user?.name?.split(" ")[0] ?? "Student";
   const metrics = summary?.metrics;
   const hasTasks = (metrics?.totalTasks ?? 0) > 0;
+  const readinessScore = getReadinessScore(
+    metrics?.completionPercentage ?? 0,
+    metrics?.currentStreak ?? 0,
+    recovery?.overdueCount ?? 0,
+  );
+  const { label: readinessLabel, color: readinessColor } = getReadinessLabel(readinessScore);
+  const daysUntilExam = getDaysUntilExam(activePlan?.examDate);
 
   return (
     <DashboardShell
-      title={`Welcome back, ${firstName}`}
-      description={
-        hasTasks
-          ? "Your study progress updates as you complete tasks."
-          : "Generate a study plan to start tracking progress."
-      }
+      title={`Good ${new Date().getHours() < 12 ? "morning" : new Date().getHours() < 17 ? "afternoon" : "evening"}, ${firstName}`}
+      description={hasTasks ? "Here's your academic overview." : "Generate a study plan to start tracking progress."}
     >
-      <div className="space-y-8">
-        <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="page-enter space-y-6">
+        {/* Overdue alert */}
+        {(recovery?.overdueCount ?? 0) > 0 && (
+          <OverdueAlertBanner overdueCount={recovery!.overdueCount} />
+        )}
+
+        {/* Top KPI strip */}
+        <section className="stagger grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          {/* Readiness Score — special card */}
+          <div className="relative overflow-hidden rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/15 via-card to-card p-5">
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent" aria-hidden />
+            <div className="relative">
+              <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">Readiness Score</p>
+              <p className={`mt-1.5 text-3xl font-bold tabular-nums ${readinessColor}`}>{readinessScore}</p>
+              <p className={`text-xs font-medium ${readinessColor}`}>{readinessLabel}</p>
+              {/* Mini progress bar */}
+              <div className="mt-3 h-1 w-full overflow-hidden rounded-full bg-white/10">
+                <div
+                  className="h-full rounded-full bg-primary transition-all duration-1000"
+                  style={{ width: `${readinessScore}%` }}
+                />
+              </div>
+            </div>
+          </div>
+
           <StatCard
             label="Completion"
             value={hasTasks ? `${metrics!.completionPercentage}%` : "0%"}
-            hint={
-              hasTasks
-                ? `${metrics!.completedTasks} of ${metrics!.totalTasks} tasks`
-                : "No tasks yet"
-            }
+            hint={hasTasks ? `${metrics!.completedTasks} of ${metrics!.totalTasks} tasks` : "No tasks yet"}
             icon={Target}
-          />
-          <StatCard
-            label="Completed"
-            value={String(metrics?.completedTasks ?? 0)}
-            hint="Tasks marked done"
-            icon={CheckCircle2}
-          />
-          <StatCard
-            label="Remaining"
-            value={String(metrics?.remainingTasks ?? 0)}
-            hint="Still to finish"
-            icon={ListTodo}
           />
           <StatCard
             label="Study streak"
             value={`${metrics?.currentStreak ?? 0}d`}
-            hint={
-              (metrics?.studyDaysCompleted ?? 0) > 0
-                ? `${metrics!.studyDaysCompleted} study days total`
-                : "Complete a task to start"
-            }
+            hint={(metrics?.studyDaysCompleted ?? 0) > 0 ? `${metrics!.studyDaysCompleted} days studied` : "Complete a task to start"}
             icon={Flame}
+            accent="amber"
+          />
+          {daysUntilExam !== null ? (
+            <div className="relative overflow-hidden rounded-2xl border border-amber-500/20 bg-amber-500/5 p-5">
+              <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">Exam Countdown</p>
+              <p className="mt-1.5 text-3xl font-bold tabular-nums text-amber-400">{daysUntilExam}</p>
+              <p className="text-xs text-muted-foreground">days remaining</p>
+              <div className="mt-3 h-1 w-full overflow-hidden rounded-full bg-white/10">
+                <div className="h-full rounded-full bg-amber-400/60" style={{ width: "100%" }} />
+              </div>
+            </div>
+          ) : (
+            <StatCard
+              label="Remaining"
+              value={String(metrics?.remainingTasks ?? 0)}
+              hint="Tasks still to finish"
+              icon={ListTodo}
+              accent="rose"
+            />
+          )}
+        </section>
+
+        {/* Second row: stats */}
+        <section className="grid gap-3 sm:grid-cols-3">
+          <StatCard
+            label="Completed tasks"
+            value={String(metrics?.completedTasks ?? 0)}
+            hint="Tasks marked done"
+            icon={CheckCircle2}
+            accent="emerald"
+          />
+          <StatCard
+            label="Total tasks"
+            value={String(metrics?.totalTasks ?? 0)}
+            hint="Across all study plans"
+            icon={Target}
+          />
+          <StatCard
+            label="Pending"
+            value={String(metrics?.remainingTasks ?? 0)}
+            hint="Still to complete"
+            icon={ListTodo}
+            accent="amber"
           />
         </section>
 
+        {/* Upcoming tasks */}
         <section>
           <UpcomingTasks tasks={summary?.upcomingTasks ?? []} />
         </section>
 
-        {recovery ? <RecoveryPanel initial={recovery} /> : null}
+        {/* Revisions overview */}
+        {revisions && <RevisionOverview buckets={revisions} />}
 
-        {revisions ? <RevisionOverview buckets={revisions} /> : null}
-
+        {/* AI suggestion */}
         <AiSuggestionCard />
 
+        {/* Module cards */}
         <section>
-          <div className="mb-4">
-            <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground">
               Modules
             </h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Explore each area of your academic workspace.
-            </p>
           </div>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            <FeatureCard
-              href={ROUTES.syllabus}
-              icon={BookOpen}
-              title="Syllabus"
-              description="Upload documents and manage subjects and topics."
-              accentIndex={0}
-            />
-            <FeatureCard
-              href={ROUTES.planner}
-              icon={CalendarDays}
-              title="Study planner"
-              description="Set exam dates and generate personalized schedules."
-              accentIndex={1}
-            />
-            <FeatureCard
-              href={ROUTES.progress}
-              icon={LineChart}
-              title="Progress"
-              description="Track completion, streaks, and analytics."
-              accentIndex={2}
-            />
-            <FeatureCard
-              href={ROUTES.revisions}
-              icon={RotateCcw}
-              title="Revisions"
-              description="Spaced repetition and revision timelines."
-              accentIndex={3}
-            />
-            <FeatureCard
-              href={ROUTES.assistant}
-              icon={Bot}
-              title="AI assistant"
-              description="Chat for study guidance and recovery plans."
-              accentIndex={4}
-            />
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <FeatureCard href={ROUTES.syllabus} icon={BookOpen} title="Syllabus" description="Upload and manage subjects and topics." accentIndex={0} />
+            <FeatureCard href={ROUTES.planner} icon={CalendarDays} title="Study Planner" description="Set exam dates and generate schedules." accentIndex={1} />
+            <FeatureCard href={ROUTES.progress} icon={LineChart} title="Progress" description="Track completion and analytics." accentIndex={2} />
+            <FeatureCard href={ROUTES.revisions} icon={RotateCcw} title="Revisions" description="Spaced repetition system." accentIndex={3} />
+            <FeatureCard href={ROUTES.recovery} icon={ShieldAlert} title="Recovery Center" description="Recover missed tasks intelligently." accentIndex={4} />
+            <FeatureCard href={ROUTES.assistant} icon={Bot} title="AI Assistant" description="Chat for study guidance and plans." accentIndex={0} />
           </div>
         </section>
       </div>

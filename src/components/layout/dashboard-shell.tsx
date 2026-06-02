@@ -20,25 +20,37 @@ export function DashboardShell({
   }
 
   return (
-    <div className="flex min-h-screen bg-muted/20">
+    <div className="flex h-screen overflow-hidden bg-background">
       <AppSidebar />
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
+        {/* Mobile header */}
         <MobileHeader title={title} onLogout={() => void handleLogout()} />
-        <header className="hidden border-b bg-background/80 px-6 py-6 backdrop-blur-md lg:block">
-          <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
-          {description ? (
-            <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+
+        {/* Desktop page header */}
+        <header className="hidden shrink-0 border-b border-border/60 bg-background/80 px-8 py-5 backdrop-blur-xl lg:block">
+          <h1 className="text-xl font-semibold tracking-tight">{title}</h1>
+          {description && (
+            <p className="mt-1 max-w-2xl text-sm leading-relaxed text-muted-foreground">
               {description}
             </p>
-          ) : null}
-        </header>
-        <main
-          className={cn(
-            "relative flex-1 overflow-hidden p-4 sm:p-6",
-            "before:pointer-events-none before:absolute before:inset-0 before:bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,var(--primary)/8%,transparent)]",
           )}
-        >
-          <div className="relative">{children}</div>
+        </header>
+
+        {/* Main content */}
+        <main className="relative flex-1 overflow-y-auto bg-background">
+          {/* Top gradient accent line */}
+          <div
+            className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent"
+            aria-hidden
+          />
+          {/* Subtle radial glow from top */}
+          <div
+            className="pointer-events-none absolute inset-x-0 top-0 h-64 bg-[radial-gradient(ellipse_80%_40%_at_50%_0%,oklch(0.65_0.22_270/0.06),transparent)]"
+            aria-hidden
+          />
+          <div className="relative p-6 sm:p-8">
+            {children}
+          </div>
         </main>
       </div>
     </div>

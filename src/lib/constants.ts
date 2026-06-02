@@ -9,6 +9,7 @@ export const ROUTES = {
   planner: "/planner",
   progress: "/progress",
   revisions: "/revisions",
+  recovery: "/recovery",
   assistant: "/assistant",
 } as const;
 

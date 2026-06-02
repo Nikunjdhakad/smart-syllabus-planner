@@ -5,6 +5,7 @@ import {
   buildSubjectSlices,
 } from "@/lib/progress/metrics";
 import { serializeTask } from "@/lib/progress/serialize-task";
+import Subject from "@/models/Subject";
 import Task from "@/models/Task";
 import type { ProgressSummary } from "@/types/progress";
 
@@ -14,9 +15,12 @@ const RECENT_LIMIT = 5;
 export async function getProgressSummary(userId: string): Promise<ProgressSummary> {
   await connectDB();
 
-  const tasks = await Task.find({ userId })
-    .sort({ dueDate: 1, priority: -1 })
-    .lean();
+  const [tasks, subjects] = await Promise.all([
+    Task.find({ userId }).sort({ dueDate: 1, priority: -1 }).lean(),
+    Subject.find({ userId }).select("subjectId subjectName").lean(),
+  ]);
+
+  const subjectNameMap = new Map(subjects.map((s) => [s.subjectId, s.subjectName]));
 
   const metrics = buildProgressMetrics(tasks);
   const now = new Date();
@@ -40,12 +44,20 @@ export async function getProgressSummary(userId: string): Promise<ProgressSummar
     .slice(0, RECENT_LIMIT)
     .map(serializeTask);
 
+  const bySubject = buildSubjectSlices(tasks).map((slice) => ({
+    ...slice,
+    subjectName: subjectNameMap.get(slice.subjectId) ?? slice.subjectId.slice(0, 8),
+  }));
+
+  // Build charts with subject names resolved
+  const charts = buildProgressCharts(tasks, subjectNameMap);
+
   return {
     metrics,
-    bySubject: buildSubjectSlices(tasks),
+    bySubject,
     upcomingTasks,
     recentCompletions,
-    charts: buildProgressCharts(tasks),
+    charts,
     updatedAt: new Date().toISOString(),
   };
 }

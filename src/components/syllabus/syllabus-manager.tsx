@@ -1,8 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   AlertCircle,
+  BookOpen,
   ChevronDown,
   ChevronRight,
   FileImage,
@@ -12,19 +13,16 @@ import {
   Plus,
   RefreshCw,
   Sparkles,
+  Star,
   Trash2,
   Upload,
+  CheckCircle2,
+  Clock,
+  XCircle,
 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
@@ -414,37 +412,72 @@ export function SyllabusManager() {
     { id: "image", label: "Image", icon: FileImage },
   ];
 
+  function statusIcon(status: ExtractionStatus) {
+    switch (status) {
+      case "completed": return <CheckCircle2 className="size-3.5 text-emerald-400" />;
+      case "failed": return <XCircle className="size-3.5 text-destructive" />;
+      case "processing":
+      case "pending": return <Loader2 className="size-3.5 animate-spin text-primary" />;
+      default: return <Clock className="size-3.5 text-muted-foreground" />;
+    }
+  }
+
+  function statusColor(status: ExtractionStatus) {
+    switch (status) {
+      case "completed": return "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
+      case "failed": return "bg-destructive/10 text-destructive border-destructive/20";
+      case "processing": return "bg-primary/10 text-primary border-primary/20";
+      default: return "bg-muted/50 text-muted-foreground border-border/60";
+    }
+  }
+
+  function sourceIcon(source: SyllabusItem["sourceType"]) {
+    if (source === "pdf") return <FileText className="size-3.5" />;
+    if (source === "image") return <FileImage className="size-3.5" />;
+    return <PenLine className="size-3.5" />;
+  }
+
   return (
-    <div className="space-y-6">
-      <Card className="border-border/80 bg-card/95 shadow-sm">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Upload className="size-4 text-primary" />
-            Add syllabus
-          </CardTitle>
-          <CardDescription>
-            Upload a PDF or image, or paste syllabus text. Gemini will extract
-            subjects and topics automatically.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex flex-wrap gap-2">
+    <div className="page-enter space-y-6">
+      {/* Upload card */}
+      <div className="overflow-hidden rounded-2xl border border-border/60 bg-card">
+        <div className="border-b border-border/60 px-6 py-4">
+          <div className="flex items-center gap-2">
+            <div className="flex size-8 items-center justify-center rounded-xl bg-primary/15">
+              <Upload className="size-4 text-primary" />
+            </div>
+            <div>
+              <h2 className="text-sm font-semibold">Add syllabus</h2>
+              <p className="text-xs text-muted-foreground">
+                Upload a PDF or image, or paste syllabus text. AI extracts subjects and topics automatically.
+              </p>
+            </div>
+          </div>
+        </div>
+        <div className="p-6 space-y-5">
+          {/* Tab selector */}
+          <div className="flex gap-1 rounded-xl bg-muted/40 p-1">
             {tabs.map(({ id, label, icon: Icon }) => (
-              <Button
+              <button
                 key={id}
                 type="button"
-                variant={tab === id ? "default" : "outline"}
-                size="sm"
                 onClick={() => setTab(id)}
+                className={cn(
+                  "flex flex-1 items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium transition-all",
+                  tab === id
+                    ? "bg-card text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground",
+                )}
               >
                 <Icon className="size-3.5" />
                 {label}
-              </Button>
+              </button>
             ))}
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="syllabus-title">Title</Label>
+          {/* Title */}
+          <div className="space-y-1.5">
+            <Label htmlFor="syllabus-title" className="text-sm font-medium">Title</Label>
             <Input
               id="syllabus-title"
               placeholder="e.g. CS101 — Fall 2026"
@@ -456,303 +489,187 @@ export function SyllabusManager() {
 
           {tab === "manual" ? (
             <form onSubmit={(e) => void handleManualSubmit(e)} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="raw-content">Syllabus content</Label>
+              <div className="space-y-1.5">
+                <Label htmlFor="raw-content" className="text-sm font-medium">Syllabus content</Label>
                 <textarea
                   id="raw-content"
                   required
                   minLength={10}
-                  rows={8}
+                  rows={7}
                   placeholder="Paste units, chapters, and topics…"
                   value={rawContent}
                   onChange={(e) => setRawContent(e.target.value)}
                   className={cn(
-                    "w-full min-w-0 rounded-lg border border-input bg-transparent px-2.5 py-2 text-base transition-colors outline-none",
-                    "placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 md:text-sm",
+                    "w-full min-w-0 rounded-xl border border-input bg-background/50 px-3 py-2.5 text-sm transition-colors outline-none resize-none",
+                    "placeholder:text-muted-foreground/50 focus-visible:border-primary/40 focus-visible:ring-2 focus-visible:ring-primary/20",
                   )}
                 />
               </div>
-              <Button type="submit" disabled={uploading} className="h-10">
-                {uploading ? (
-                  <>
-                    <Loader2 className="size-4 animate-spin" />
-                    Saving…
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="size-4" />
-                    Save & extract
-                  </>
-                )}
+              <Button type="submit" disabled={uploading} className="h-10 gap-2">
+                {uploading ? <><Loader2 className="size-4 animate-spin" />Saving…</> : <><Sparkles className="size-4" />Save &amp; extract with AI</>}
               </Button>
             </form>
           ) : null}
 
           {tab === "pdf" ? (
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                void handleFileSubmit("/api/syllabus/upload", pdfFile);
-              }}
-              className="space-y-4"
-            >
-              <div className="space-y-2">
-                <Label htmlFor="pdf-file">PDF file (max 10MB)</Label>
-                <Input
-                  id="pdf-file"
-                  type="file"
-                  accept="application/pdf"
-                  onChange={(e) => setPdfFile(e.target.files?.[0] ?? null)}
-                  className="h-10 file:mr-3"
-                />
+            <form onSubmit={(e) => { e.preventDefault(); void handleFileSubmit("/api/syllabus/upload", pdfFile); }} className="space-y-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="pdf-file" className="text-sm font-medium">PDF file (max 10MB)</Label>
+                <Input id="pdf-file" type="file" accept="application/pdf" onChange={(e) => setPdfFile(e.target.files?.[0] ?? null)} className="h-10 file:mr-3 file:rounded-lg file:border-0 file:bg-primary/10 file:text-primary file:text-xs file:font-medium" />
               </div>
-              <Button type="submit" disabled={uploading} className="h-10">
-                {uploading ? (
-                  <>
-                    <Loader2 className="size-4 animate-spin" />
-                    Uploading…
-                  </>
-                ) : (
-                  <>
-                    <Upload className="size-4" />
-                    Upload PDF
-                  </>
-                )}
+              <Button type="submit" disabled={uploading} className="h-10 gap-2">
+                {uploading ? <><Loader2 className="size-4 animate-spin" />Uploading…</> : <><Upload className="size-4" />Upload PDF</>}
               </Button>
             </form>
           ) : null}
 
           {tab === "image" ? (
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                void handleFileSubmit("/api/syllabus/upload-image", imageFile);
-              }}
-              className="space-y-4"
-            >
-              <div className="space-y-2">
-                <Label htmlFor="image-file">Image (JPEG, PNG, WebP — max 10MB)</Label>
-                <Input
-                  id="image-file"
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp"
-                  onChange={(e) => setImageFile(e.target.files?.[0] ?? null)}
-                  className="h-10 file:mr-3"
-                />
+            <form onSubmit={(e) => { e.preventDefault(); void handleFileSubmit("/api/syllabus/upload-image", imageFile); }} className="space-y-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="image-file" className="text-sm font-medium">Image (JPEG, PNG, WebP — max 10MB)</Label>
+                <Input id="image-file" type="file" accept="image/jpeg,image/png,image/webp" onChange={(e) => setImageFile(e.target.files?.[0] ?? null)} className="h-10 file:mr-3 file:rounded-lg file:border-0 file:bg-primary/10 file:text-primary file:text-xs file:font-medium" />
               </div>
-              <Button type="submit" disabled={uploading} className="h-10">
-                {uploading ? (
-                  <>
-                    <Loader2 className="size-4 animate-spin" />
-                    Uploading…
-                  </>
-                ) : (
-                  <>
-                    <Upload className="size-4" />
-                    Upload image
-                  </>
-                )}
+              <Button type="submit" disabled={uploading} className="h-10 gap-2">
+                {uploading ? <><Loader2 className="size-4 animate-spin" />Uploading…</> : <><Upload className="size-4" />Upload image</>}
               </Button>
             </form>
           ) : null}
 
           {message ? (
-            <div
-              role="alert"
-              className={cn(
-                "rounded-lg border px-3 py-2.5 text-sm",
-                message.type === "success"
-                  ? "border-primary/30 bg-primary/5 text-foreground"
-                  : "border-destructive/30 bg-destructive/5 text-destructive",
-              )}
-            >
+            <div role="alert" className={cn("rounded-xl border px-4 py-3 text-sm",
+              message.type === "success" ? "border-emerald-500/25 bg-emerald-500/8 text-emerald-400" : "border-destructive/25 bg-destructive/8 text-destructive"
+            )}>
               {message.text}
             </div>
           ) : null}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
-      <Card className="border-border/80 bg-card/95 shadow-sm">
-        <CardHeader className="flex flex-row items-center justify-between gap-4 space-y-0">
+      {/* Syllabi list */}
+      <div className="overflow-hidden rounded-2xl border border-border/60 bg-card">
+        <div className="flex items-center justify-between border-b border-border/60 px-6 py-4">
           <div>
-            <CardTitle>Your syllabi</CardTitle>
-            <CardDescription>
-              {hasActiveExtraction
-                ? "Extraction in progress — list refreshes automatically."
-                : "Expand a completed syllabus to view subjects and topics."}
-            </CardDescription>
+            <h2 className="text-sm font-semibold">Your syllabi</h2>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {hasActiveExtraction ? "AI extraction in progress — auto-refreshing…" : "Expand a syllabus to view subjects and topics."}
+            </p>
           </div>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => void refreshList()}
-            disabled={loadingList}
-          >
-            <RefreshCw
-              className={cn("size-3.5", loadingList && "animate-spin")}
-            />
+          <Button type="button" variant="outline" size="sm" onClick={() => void refreshList()} disabled={loadingList}>
+            <RefreshCw className={cn("size-3.5", loadingList && "animate-spin")} />
             Refresh
           </Button>
-        </CardHeader>
-        <CardContent>
+        </div>
+
+        <div className="p-4">
           {loadingList && syllabi.length === 0 ? (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Loader2 className="size-4 animate-spin" />
-              Loading…
+            <div className="space-y-3">
+              {[0, 1, 2].map((i) => (
+                <div key={i} className="skeleton h-14 rounded-xl" />
+              ))}
             </div>
           ) : syllabi.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
-              No syllabi yet. Add one above to get started.
-            </p>
+            <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-border/60 py-12 text-center">
+              <BookOpen className="size-8 text-muted-foreground/40" />
+              <p className="text-sm font-medium">No syllabi yet</p>
+              <p className="text-xs text-muted-foreground">Add one above to get started.</p>
+            </div>
           ) : (
             <ul className="space-y-3">
               {syllabi.map((item) => {
                 const expanded = expandedId === item.syllabusId;
                 const subjects = subjectsBySyllabus[item.syllabusId];
-                const isActive =
-                  item.extractionStatus === "pending" ||
-                  item.extractionStatus === "processing";
+                const isActive = item.extractionStatus === "pending" || item.extractionStatus === "processing";
 
                 return (
-                  <li
-                    key={item.syllabusId}
-                    className="relative rounded-xl border border-border/80 bg-muted/20"
-                  >
-                    <button
-                      type="button"
-                      onClick={() => toggleExpand(item.syllabusId)}
-                      className="flex w-full items-start gap-3 p-4 text-left"
-                    >
-                      {expanded ? (
-                        <ChevronDown className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
-                      ) : (
-                        <ChevronRight className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
-                      )}
-                      <div className="min-w-0 flex-1 space-y-2">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <span className="font-medium">{item.title}</span>
-                          <Badge variant="outline">{sourceLabel(item.sourceType)}</Badge>
-                          <Badge variant={statusBadgeVariant(item.extractionStatus)}>
-                            {isActive ? (
-                              <Loader2 className="size-3 animate-spin" />
-                            ) : null}
-                            {item.extractionStatus}
-                          </Badge>
+                  <li key={item.syllabusId} className={cn(
+                    "overflow-hidden rounded-xl border transition-colors",
+                    expanded ? "border-primary/30 bg-primary/3" : "border-border/60 bg-white/2 hover:bg-white/3",
+                  )}>
+                    {/* Header row */}
+                    <div className="flex items-center gap-3 px-4 py-3.5">
+                      <button type="button" onClick={() => toggleExpand(item.syllabusId)} className="flex flex-1 items-center gap-3 text-left min-w-0">
+                        <span className={cn("flex size-7 shrink-0 items-center justify-center rounded-lg transition-transform", expanded ? "rotate-90" : "")}>
+                          <ChevronRight className="size-4 text-muted-foreground" />
+                        </span>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="font-medium truncate">{item.title}</span>
+                            <span className="flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium bg-muted/40">
+                              {sourceIcon(item.sourceType)}
+                              {item.sourceType}
+                            </span>
+                            <span className={cn("flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium", statusColor(item.extractionStatus))}>
+                              {statusIcon(item.extractionStatus)}
+                              {item.extractionStatus}
+                            </span>
+                          </div>
+                          <p className="mt-0.5 text-xs text-muted-foreground">{formatDate(item.createdAt)}</p>
                         </div>
-                        <p className="text-xs text-muted-foreground">
-                          Added {formatDate(item.createdAt)}
-                        </p>
-                      </div>
-                    </button>
-                    <div className="absolute right-3 top-3">
-                      <Button
-                        type="button"
-                        size="icon"
-                        variant="ghost"
-                        className="size-7 text-muted-foreground hover:text-destructive"
+                      </button>
+                      <Button type="button" size="icon" variant="ghost" className="size-7 shrink-0 text-muted-foreground hover:text-destructive"
                         disabled={deletingId === item.syllabusId}
-                        onClick={(e) => { e.stopPropagation(); void handleDeleteSyllabus(item.syllabusId); }}
-                        title="Delete syllabus"
-                      >
-                        {deletingId === item.syllabusId ? (
-                          <Loader2 className="size-3.5 animate-spin" />
-                        ) : (
-                          <Trash2 className="size-3.5" />
-                        )}
+                        onClick={(e) => { e.stopPropagation(); void handleDeleteSyllabus(item.syllabusId); }}>
+                        {deletingId === item.syllabusId ? <Loader2 className="size-3.5 animate-spin" /> : <Trash2 className="size-3.5" />}
                       </Button>
                     </div>
 
-                    {expanded ? (
-                      <div className="border-t border-border/60 px-4 pb-4 pt-2">
-                        {item.extractionStatus === "failed" ? (
+                    {/* Expanded content */}
+                    {expanded && (
+                      <div className="border-t border-border/40 px-4 pb-4 pt-3 space-y-4">
+                        {/* Failed */}
+                        {item.extractionStatus === "failed" && (
                           <div className="space-y-3">
-                            <div className="flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">
+                            <div className="flex items-start gap-2 rounded-xl border border-destructive/25 bg-destructive/8 p-3 text-sm text-destructive">
                               <AlertCircle className="mt-0.5 size-4 shrink-0" />
-                              <p>
-                                {item.extractionError ?? "Extraction failed."}
-                              </p>
+                              <p>{item.extractionError ?? "Extraction failed."}</p>
                             </div>
-                            <Button
-                              type="button"
-                              size="sm"
-                              variant="outline"
-                              disabled={retryingId === item.syllabusId}
-                              onClick={() => void handleRetry(item.syllabusId)}
-                            >
-                              {retryingId === item.syllabusId ? (
-                                <>
-                                  <Loader2 className="size-3.5 animate-spin" />
-                                  Retrying…
-                                </>
-                              ) : (
-                                <>
-                                  <RefreshCw className="size-3.5" />
-                                  Retry extraction
-                                </>
-                              )}
+                            <Button type="button" size="sm" variant="outline" disabled={retryingId === item.syllabusId} onClick={() => void handleRetry(item.syllabusId)}>
+                              {retryingId === item.syllabusId ? <><Loader2 className="size-3.5 animate-spin" />Retrying…</> : <><RefreshCw className="size-3.5" />Retry extraction</>}
                             </Button>
                           </div>
-                        ) : null}
+                        )}
 
-                        {isActive ? (
-                          <div className="flex items-center gap-2 py-2 text-sm text-muted-foreground">
+                        {/* Processing */}
+                        {isActive && (
+                          <div className="flex items-center gap-2 rounded-xl border border-primary/20 bg-primary/8 px-4 py-3 text-sm">
                             <Loader2 className="size-4 animate-spin text-primary" />
-                            Extracting subjects and topics with Gemini…
+                            <span className="text-primary">AI is extracting subjects and topics…</span>
                           </div>
-                        ) : null}
+                        )}
 
-                        {item.extractionStatus === "completed" ? (
+                        {/* Completed — subjects */}
+                        {item.extractionStatus === "completed" && (
                           subjects ? (
                             subjects.length === 0 ? (
-                              <p className="text-sm text-muted-foreground">
-                                No subjects found in this syllabus.
-                              </p>
+                              <p className="text-sm text-muted-foreground">No subjects found in this syllabus.</p>
                             ) : (
                               <div className="space-y-4">
                                 {subjects.map((subject) => (
-                                  <div key={subject.subjectId}>
-                                    <div className="flex items-center justify-between">
-                                      <h4 className="text-sm font-semibold">
-                                        {subject.subjectName}
-                                      </h4>
+                                  <div key={subject.subjectId} className="rounded-xl border border-border/60 bg-white/2 p-4">
+                                    <div className="flex items-center justify-between mb-3">
+                                      <div className="flex items-center gap-2">
+                                        <BookOpen className="size-4 text-primary" />
+                                        <h4 className="text-sm font-semibold">{subject.subjectName}</h4>
+                                        <span className="text-xs text-muted-foreground">({subject.topics.length} topics)</span>
+                                      </div>
                                       <div className="flex items-center gap-1">
-                                        <Button
-                                          type="button"
-                                          size="icon"
-                                          variant="ghost"
-                                          className="size-6 text-muted-foreground hover:text-primary"
-                                          title="Add topic"
-                                          onClick={() => { setAddingTopicFor(subject.subjectId); setNewTopicName(""); }}
-                                        >
+                                        <Button type="button" size="icon" variant="ghost" className="size-7 text-muted-foreground hover:text-primary"
+                                          title="Add topic" onClick={() => { setAddingTopicFor(subject.subjectId); setNewTopicName(""); }}>
                                           <Plus className="size-3.5" />
                                         </Button>
-                                        <Button
-                                          type="button"
-                                          size="icon"
-                                          variant="ghost"
-                                          className="size-6 text-muted-foreground hover:text-destructive"
-                                          disabled={deletingId === subject.subjectId}
-                                          title="Delete subject"
-                                          onClick={() => void handleDeleteSubject(item.syllabusId, subject.subjectId)}
-                                        >
-                                          {deletingId === subject.subjectId ? (
-                                            <Loader2 className="size-3 animate-spin" />
-                                          ) : (
-                                            <Trash2 className="size-3" />
-                                          )}
+                                        <Button type="button" size="icon" variant="ghost" className="size-7 text-muted-foreground hover:text-destructive"
+                                          disabled={deletingId === subject.subjectId} title="Delete subject"
+                                          onClick={() => void handleDeleteSubject(item.syllabusId, subject.subjectId)}>
+                                          {deletingId === subject.subjectId ? <Loader2 className="size-3 animate-spin" /> : <Trash2 className="size-3" />}
                                         </Button>
                                       </div>
                                     </div>
-                                    <ul className="mt-2 space-y-1.5">
+                                    <ul className="space-y-1.5">
                                       {subject.topics.map((topic) => (
-                                        <li
-                                          key={topic.topicId}
-                                          className="flex items-center justify-between gap-2 rounded-lg bg-background/80 px-3 py-2 text-sm"
-                                        >
-                                          <span className="flex-1">{topic.topicName}</span>
+                                        <li key={topic.topicId} className="flex items-center gap-2 rounded-lg border border-border/40 bg-background/60 px-3 py-2">
+                                          <span className="flex-1 text-sm">{topic.topicName}</span>
                                           <select
-                                            className="rounded border border-border bg-transparent px-1.5 py-0.5 text-xs text-muted-foreground"
+                                            className="h-6 rounded-lg border border-border/60 bg-background/80 px-1.5 text-xs text-muted-foreground outline-none focus:border-primary/40"
                                             value={topic.status ?? "pending"}
                                             onChange={(e) => void handleUpdateTopicStatus(item.syllabusId, topic.topicId, e.target.value)}
                                           >
@@ -760,38 +677,24 @@ export function SyllabusManager() {
                                             <option value="in_progress">In Progress</option>
                                             <option value="completed">Completed</option>
                                           </select>
-                                          <span className="shrink-0 text-xs text-muted-foreground">
-                                            ★ {topic.difficulty}/5
-                                          </span>
-                                          <Button
-                                            type="button"
-                                            size="icon"
-                                            variant="ghost"
-                                            className="size-5 text-muted-foreground hover:text-destructive"
-                                            disabled={deletingId === topic.topicId}
-                                            title="Delete topic"
-                                            onClick={() => void handleDeleteTopic(item.syllabusId, topic.topicId)}
-                                          >
-                                            {deletingId === topic.topicId ? (
-                                              <Loader2 className="size-3 animate-spin" />
-                                            ) : (
-                                              <Trash2 className="size-3" />
-                                            )}
+                                          <div className="flex items-center gap-0.5">
+                                            {Array.from({ length: 5 }).map((_, i) => (
+                                              <Star key={i} className={cn("size-2.5", i < (topic.difficulty ?? 3) ? "text-amber-400 fill-amber-400" : "text-muted-foreground/30")} />
+                                            ))}
+                                          </div>
+                                          <Button type="button" size="icon" variant="ghost" className="size-6 text-muted-foreground hover:text-destructive"
+                                            disabled={deletingId === topic.topicId} title="Delete topic"
+                                            onClick={() => void handleDeleteTopic(item.syllabusId, topic.topicId)}>
+                                            {deletingId === topic.topicId ? <Loader2 className="size-3 animate-spin" /> : <Trash2 className="size-3" />}
                                           </Button>
                                         </li>
                                       ))}
                                       {addingTopicFor === subject.subjectId && (
-                                        <li className="flex items-center gap-2 rounded-lg bg-background/80 px-3 py-2">
-                                          <Input
-                                            placeholder="Topic name"
-                                            value={newTopicName}
-                                            onChange={(e) => setNewTopicName(e.target.value)}
-                                            className="h-7 text-sm"
-                                            onKeyDown={(e) => { if (e.key === "Enter") void handleAddTopic(item.syllabusId, subject.subjectId); if (e.key === "Escape") setAddingTopicFor(null); }}
-                                            autoFocus
-                                          />
-                                          <Button size="sm" className="h-7 text-xs" onClick={() => void handleAddTopic(item.syllabusId, subject.subjectId)}>Add</Button>
-                                          <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => setAddingTopicFor(null)}>✕</Button>
+                                        <li className="flex items-center gap-2">
+                                          <Input placeholder="Topic name" value={newTopicName} onChange={(e) => setNewTopicName(e.target.value)} className="h-8 text-sm"
+                                            onKeyDown={(e) => { if (e.key === "Enter") void handleAddTopic(item.syllabusId, subject.subjectId); if (e.key === "Escape") setAddingTopicFor(null); }} autoFocus />
+                                          <Button size="sm" className="h-8 text-xs" onClick={() => void handleAddTopic(item.syllabusId, subject.subjectId)}>Add</Button>
+                                          <Button size="sm" variant="ghost" className="h-8 text-xs" onClick={() => setAddingTopicFor(null)}>✕</Button>
                                         </li>
                                       )}
                                     </ul>
@@ -800,68 +703,41 @@ export function SyllabusManager() {
                                 {/* Add subject */}
                                 {addingSubjectFor === item.syllabusId ? (
                                   <div className="flex items-center gap-2">
-                                    <Input
-                                      placeholder="Subject name"
-                                      value={newSubjectName}
-                                      onChange={(e) => setNewSubjectName(e.target.value)}
-                                      className="h-8 text-sm"
-                                      onKeyDown={(e) => { if (e.key === "Enter") void handleAddSubject(item.syllabusId); if (e.key === "Escape") setAddingSubjectFor(null); }}
-                                      autoFocus
-                                    />
-                                    <Button size="sm" className="h-8" onClick={() => void handleAddSubject(item.syllabusId)}>Add</Button>
-                                    <Button size="sm" variant="ghost" className="h-8" onClick={() => setAddingSubjectFor(null)}>✕</Button>
+                                    <Input placeholder="Subject name" value={newSubjectName} onChange={(e) => setNewSubjectName(e.target.value)} className="h-9 text-sm"
+                                      onKeyDown={(e) => { if (e.key === "Enter") void handleAddSubject(item.syllabusId); if (e.key === "Escape") setAddingSubjectFor(null); }} autoFocus />
+                                    <Button size="sm" onClick={() => void handleAddSubject(item.syllabusId)}>Add</Button>
+                                    <Button size="sm" variant="ghost" onClick={() => setAddingSubjectFor(null)}>✕</Button>
                                   </div>
                                 ) : (
-                                  <Button
-                                    type="button"
-                                    size="sm"
-                                    variant="outline"
-                                    className="mt-1"
-                                    onClick={() => { setAddingSubjectFor(item.syllabusId); setNewSubjectName(""); }}
-                                  >
-                                    <Plus className="size-3.5" />
-                                    Add subject
+                                  <Button type="button" size="sm" variant="outline" className="gap-1.5"
+                                    onClick={() => { setAddingSubjectFor(item.syllabusId); setNewSubjectName(""); }}>
+                                    <Plus className="size-3.5" />Add subject
                                   </Button>
                                 )}
                               </div>
                             )
                           ) : (
-                            <div className="flex items-center gap-2 py-2 text-sm text-muted-foreground">
-                              <Loader2 className="size-4 animate-spin" />
-                              Loading subjects…
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                              <Loader2 className="size-4 animate-spin" />Loading subjects…
                             </div>
                           )
-                        ) : null}
+                        )}
 
-                        {item.extractionStatus === "pending" &&
-                        !item.extractionError ? (
-                          <Button
-                            type="button"
-                            size="sm"
-                            variant="outline"
-                            className="mt-2"
-                            disabled={retryingId === item.syllabusId}
-                            onClick={() => void handleRetry(item.syllabusId)}
-                          >
-                            {retryingId === item.syllabusId ? (
-                              <>
-                                <Loader2 className="size-3.5 animate-spin" />
-                                Starting…
-                              </>
-                            ) : (
-                              "Run extraction now"
-                            )}
+                        {/* Pending — run extraction now */}
+                        {item.extractionStatus === "pending" && !item.extractionError && (
+                          <Button type="button" size="sm" variant="outline" disabled={retryingId === item.syllabusId} onClick={() => void handleRetry(item.syllabusId)}>
+                            {retryingId === item.syllabusId ? <><Loader2 className="size-3.5 animate-spin" />Starting…</> : "Run extraction now"}
                           </Button>
-                        ) : null}
+                        )}
                       </div>
-                    ) : null}
+                    )}
                   </li>
                 );
               })}
             </ul>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }

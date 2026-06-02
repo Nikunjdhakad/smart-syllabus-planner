@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { GraduationCap } from "lucide-react";
-
 import { APP_NAME } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
@@ -19,44 +18,29 @@ export function BrandLogo({
     <div className={cn("flex items-center gap-2.5", className)}>
       <div
         className={cn(
-          "flex size-9 items-center justify-center rounded-xl shadow-sm",
+          "flex size-8 items-center justify-center rounded-xl",
           inverted
-            ? "bg-white/15 text-primary-foreground"
-            : "bg-primary text-primary-foreground shadow-primary/25",
+            ? "bg-white/15 text-white"
+            : "bg-primary text-primary-foreground shadow-md shadow-primary/30",
         )}
       >
-        <GraduationCap className="size-5" strokeWidth={2.25} />
+        <GraduationCap className="size-4" strokeWidth={2.5} />
       </div>
-      <div className="text-left leading-tight">
-        <span
-          className={cn(
-            "block text-sm font-semibold tracking-tight",
-            inverted && "text-primary-foreground",
-          )}
-        >
+      <div className="leading-tight">
+        <span className={cn("block text-sm font-bold tracking-tight", inverted ? "text-white" : "text-foreground")}>
           {APP_NAME}
         </span>
-        {showTagline ? (
-          <span
-            className={cn(
-              "block text-xs text-muted-foreground",
-              inverted && "text-primary-foreground/70",
-            )}
-          >
+        {showTagline && (
+          <span className={cn("block text-xs", inverted ? "text-white/60" : "text-muted-foreground")}>
             Academic planner
           </span>
-        ) : null}
+        )}
       </div>
     </div>
   );
 
   if (href) {
-    return (
-      <Link href={href} className="transition-opacity hover:opacity-90">
-        {content}
-      </Link>
-    );
+    return <Link href={href} className="transition-opacity hover:opacity-80">{content}</Link>;
   }
-
   return content;
 }

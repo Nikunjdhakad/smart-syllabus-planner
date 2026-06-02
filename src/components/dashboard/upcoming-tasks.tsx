@@ -1,86 +1,85 @@
-import Link from "next/link";
-import { CalendarClock, CheckCircle2 } from "lucide-react";
+"use client";
 
+import Link from "next/link";
+import { CalendarClock, CheckCircle2, Clock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { ROUTES } from "@/lib/constants";
+import { cn } from "@/lib/utils";
 import type { TaskSummaryItem } from "@/types/progress";
 
 function formatDueDate(iso: string): string {
-  return new Date(iso).toLocaleDateString(undefined, {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-  });
+  const d = new Date(iso);
+  const now = new Date();
+  const diff = Math.ceil((d.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+  if (diff === 0) return "Today";
+  if (diff === 1) return "Tomorrow";
+  if (diff < 0) return `${Math.abs(diff)}d overdue`;
+  return d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
 }
 
-const priorityVariant: Record<string, "default" | "secondary" | "destructive"> =
-  {
-    high: "destructive",
-    medium: "default",
-    low: "secondary",
-  };
+const priorityConfig: Record<string, { variant: "default" | "secondary" | "destructive"; color: string }> = {
+  high: { variant: "destructive", color: "bg-rose-500/10 border-rose-500/20 text-rose-400" },
+  medium: { variant: "default", color: "bg-amber-500/10 border-amber-500/20 text-amber-400" },
+  low: { variant: "secondary", color: "bg-emerald-500/10 border-emerald-500/20 text-emerald-400" },
+};
 
-export function UpcomingTasks({
-  tasks,
-}: {
-  tasks: TaskSummaryItem[];
-}) {
+export function UpcomingTasks({ tasks }: { tasks: TaskSummaryItem[] }) {
   return (
-    <Card className="border-border/60 bg-card/80 shadow-sm backdrop-blur-sm">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-base">
+    <div className="rounded-2xl border border-border/60 bg-card overflow-hidden">
+      <div className="flex items-center justify-between border-b border-border/60 px-5 py-4">
+        <div className="flex items-center gap-2">
           <CalendarClock className="size-4 text-primary" />
-          Upcoming tasks
-        </CardTitle>
-        <CardDescription>
-          Next items on your study plan. Mark complete from the planner.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        {tasks.length === 0 ? (
-          <div className="flex flex-col items-center gap-2 rounded-lg border border-dashed border-border/80 py-10 text-center">
-            <CheckCircle2 className="size-8 text-muted-foreground/60" />
-            <p className="text-sm font-medium">You&apos;re all caught up</p>
-            <p className="max-w-xs text-xs text-muted-foreground">
-              Generate a study plan to schedule tasks, or complete pending work.
-            </p>
-            <Link
-              href={ROUTES.planner}
-              className="mt-2 text-sm font-medium text-primary hover:underline"
-            >
-              Open study planner
-            </Link>
+          <h2 className="font-semibold">Upcoming tasks</h2>
+        </div>
+        <Link href={ROUTES.planner} className="text-xs text-primary hover:underline">
+          View planner →
+        </Link>
+      </div>
+
+      {tasks.length === 0 ? (
+        <div className="flex flex-col items-center gap-3 py-12 text-center">
+          <div className="flex size-12 items-center justify-center rounded-2xl bg-primary/10">
+            <CheckCircle2 className="size-6 text-primary" />
           </div>
-        ) : (
-          <ul className="divide-y divide-border/60">
-            {tasks.map((task) => (
+          <div>
+            <p className="font-medium">All caught up!</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Generate a study plan to schedule tasks.
+            </p>
+          </div>
+          <Link href={ROUTES.planner} className="text-sm font-medium text-primary hover:underline">
+            Open study planner →
+          </Link>
+        </div>
+      ) : (
+        <ul className="divide-y divide-border/40">
+          {tasks.map((task, i) => {
+            const cfg = priorityConfig[task.priority] ?? priorityConfig.low;
+            const dueText = formatDueDate(task.dueDate);
+            const isOverdue = dueText.includes("overdue");
+            return (
               <li
                 key={task.taskId}
-                className="flex flex-wrap items-start justify-between gap-2 py-3 first:pt-0 last:pb-0"
+                className="flex items-center gap-3 px-5 py-3.5 transition-colors hover:bg-white/2"
+                style={{ animationDelay: `${i * 40}ms` }}
               >
-                <div className="min-w-0 flex-1 space-y-1">
-                  <p className="truncate font-medium leading-snug">
-                    {task.taskTitle}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    Due {formatDueDate(task.dueDate)}
+                <div className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-primary/8">
+                  <Clock className="size-3.5 text-primary/70" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium">{task.taskTitle}</p>
+                  <p className={cn("text-xs", isOverdue ? "text-destructive" : "text-muted-foreground")}>
+                    {dueText}
                   </p>
                 </div>
-                <Badge variant={priorityVariant[task.priority] ?? "secondary"}>
+                <span className={cn("shrink-0 rounded-full border px-2 py-0.5 text-xs font-medium", cfg.color)}>
                   {task.priority}
-                </Badge>
+                </span>
               </li>
-            ))}
-          </ul>
-        )}
-      </CardContent>
-    </Card>
+            );
+          })}
+        </ul>
+      )}
+    </div>
   );
 }

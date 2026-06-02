@@ -1,15 +1,8 @@
 import Link from "next/link";
-import { Bot, BookOpen, CalendarCheck, LifeBuoy, RotateCcw } from "lucide-react";
-
+import { Bot, BookOpen, CalendarCheck, LifeBuoy, RotateCcw, ArrowRight } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { ROUTES } from "@/lib/constants";
+import { cn } from "@/lib/utils";
 
 const QUICK_LINKS = [
   { label: "What to study today?", icon: BookOpen },
@@ -20,37 +13,43 @@ const QUICK_LINKS = [
 
 export function AiSuggestionCard() {
   return (
-    <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-card shadow-sm">
-      <CardHeader className="pb-2">
-        <CardTitle className="flex items-center gap-2 text-base">
-          <Bot className="size-4 text-primary" />
-          AI study assistant
-        </CardTitle>
-        <CardDescription>
-          Get personalized guidance, crash plans, and daily study suggestions.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        <div className="flex flex-wrap gap-2">
-          {QUICK_LINKS.map(({ label, icon: Icon }) => (
-            <Link
-              key={label}
-              href={`${ROUTES.assistant}?q=${encodeURIComponent(label)}`}
-              className="flex items-center gap-1.5 rounded-full border border-border/60 bg-background px-3 py-1.5 text-xs font-medium transition-colors hover:bg-muted"
-            >
-              <Icon className="size-3.5 shrink-0 text-primary" aria-hidden />
-              {label}
-            </Link>
-          ))}
+    <div className="relative overflow-hidden rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/10 via-card to-card p-6">
+      {/* Decorative glow */}
+      <div className="pointer-events-none absolute -right-8 -top-8 size-32 rounded-full bg-primary/10 blur-2xl" aria-hidden />
+
+      <div className="relative flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex-1 space-y-1">
+          <div className="flex items-center gap-2">
+            <div className="flex size-8 items-center justify-center rounded-xl bg-primary/15">
+              <Bot className="size-4 text-primary" />
+            </div>
+            <h2 className="font-semibold">AI Study Assistant</h2>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            Get personalized guidance, crash plans, and daily study suggestions instantly.
+          </p>
         </div>
         <Link
           href={ROUTES.assistant}
-          className={buttonVariants({ size: "sm", className: "w-full sm:w-auto" })}
+          className={cn(buttonVariants({ size: "sm" }), "shrink-0 gap-1.5")}
         >
-          <Bot className="size-4" aria-hidden />
           Open assistant
+          <ArrowRight className="size-3.5" />
         </Link>
-      </CardContent>
-    </Card>
+      </div>
+
+      <div className="relative mt-4 flex flex-wrap gap-2">
+        {QUICK_LINKS.map(({ label, icon: Icon }) => (
+          <Link
+            key={label}
+            href={`${ROUTES.assistant}?q=${encodeURIComponent(label)}`}
+            className="flex items-center gap-1.5 rounded-xl border border-border/60 bg-background/60 px-3 py-1.5 text-xs font-medium transition-all hover:border-primary/30 hover:bg-primary/5 hover:text-primary"
+          >
+            <Icon className="size-3.5 shrink-0 text-primary/70" aria-hidden />
+            {label}
+          </Link>
+        ))}
+      </div>
+    </div>
   );
 }

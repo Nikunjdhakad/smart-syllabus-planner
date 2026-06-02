@@ -1,7 +1,35 @@
 import type { LucideIcon } from "lucide-react";
-
-import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+
+type Accent = "primary" | "emerald" | "amber" | "rose" | "cyan";
+
+const accentConfig: Record<Accent, { icon: string; value: string; glow: string }> = {
+  primary: {
+    icon: "bg-primary/12 text-primary",
+    value: "text-foreground",
+    glow: "from-primary/6 to-transparent",
+  },
+  emerald: {
+    icon: "bg-emerald-500/12 text-emerald-400",
+    value: "text-emerald-400",
+    glow: "from-emerald-500/6 to-transparent",
+  },
+  amber: {
+    icon: "bg-amber-500/12 text-amber-400",
+    value: "text-amber-400",
+    glow: "from-amber-500/6 to-transparent",
+  },
+  rose: {
+    icon: "bg-rose-500/12 text-rose-400",
+    value: "text-rose-400",
+    glow: "from-rose-500/6 to-transparent",
+  },
+  cyan: {
+    icon: "bg-cyan-500/12 text-cyan-400",
+    value: "text-cyan-400",
+    glow: "from-cyan-500/6 to-transparent",
+  },
+};
 
 export function StatCard({
   label,
@@ -9,37 +37,54 @@ export function StatCard({
   hint,
   icon: Icon,
   className,
+  accent = "primary",
 }: {
   label: string;
   value: string;
   hint?: string;
   icon: LucideIcon;
   className?: string;
+  accent?: Accent;
 }) {
+  const cfg = accentConfig[accent];
+
   return (
-    <Card
-      size="sm"
+    <div
       className={cn(
-        "border-border/60 bg-card/80 shadow-sm backdrop-blur-sm",
+        "group relative overflow-hidden rounded-2xl border border-border/60 bg-card p-5",
+        "transition-all duration-300 hover:-translate-y-0.5 hover:border-border/80",
+        "hover:shadow-lg hover:shadow-black/10",
         className,
       )}
     >
-      <CardContent className="flex items-start justify-between gap-3">
-        <div className="space-y-1">
-          <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+      {/* Gradient top-left accent */}
+      <div
+        className={cn("pointer-events-none absolute inset-0 bg-gradient-to-br opacity-60", cfg.glow)}
+        aria-hidden
+      />
+
+      <div className="relative flex items-start justify-between gap-3">
+        <div className="space-y-1.5 min-w-0">
+          <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground/70">
             {label}
           </p>
-          <p className="text-2xl font-semibold tracking-tight tabular-nums">
+          <p className={cn("count-up text-3xl font-bold tracking-tight tabular-nums", cfg.value)}>
             {value}
           </p>
-          {hint ? (
-            <p className="text-xs text-muted-foreground">{hint}</p>
-          ) : null}
+          {hint && (
+            <p className="text-xs text-muted-foreground leading-snug">{hint}</p>
+          )}
         </div>
-        <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-          <Icon className="size-4" />
+        <div
+          className={cn(
+            "flex size-10 shrink-0 items-center justify-center rounded-xl",
+            "transition-transform duration-300 group-hover:scale-110",
+            cfg.icon,
+          )}
+        >
+          <Icon className="size-5" />
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

@@ -72,7 +72,7 @@ export function buildProgressMetrics(tasks: TaskForMetrics[]): ProgressMetrics {
   };
 }
 
-export function buildSubjectSlices(tasks: TaskForMetrics[]): SubjectProgressSlice[] {
+export function buildSubjectSlices(tasks: TaskForMetrics[]): Omit<SubjectProgressSlice, "subjectName">[] {
   const bySubject = new Map<string, { total: number; completed: number }>();
 
   for (const task of tasks) {
@@ -117,7 +117,10 @@ export function buildDailyCompletions(
   return points;
 }
 
-export function buildProgressCharts(tasks: TaskForMetrics[]): ProgressCharts {
+export function buildProgressCharts(
+  tasks: TaskForMetrics[],
+  subjectNames?: Map<string, string>,
+): ProgressCharts {
   const statusCounts = STATUS_LABELS.map(
     (status) => tasks.filter((t) => t.status === status).length,
   );
@@ -125,13 +128,17 @@ export function buildProgressCharts(tasks: TaskForMetrics[]): ProgressCharts {
   const bySubject = buildSubjectSlices(tasks);
   const dailyCompletions = buildDailyCompletions(tasks);
 
+  const subjectLabels = bySubject.map(
+    (s) => subjectNames?.get(s.subjectId) ?? s.subjectId.slice(0, 8),
+  );
+
   return {
     completionByStatus: {
       labels: [...STATUS_LABELS],
       datasets: [{ label: "Tasks", data: statusCounts }],
     },
     completionBySubject: {
-      labels: bySubject.map((s) => s.subjectId),
+      labels: subjectLabels,
       datasets: [
         {
           label: "Completed",

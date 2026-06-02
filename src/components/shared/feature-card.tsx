@@ -1,15 +1,13 @@
 import Link from "next/link";
 import { ArrowUpRight, type LucideIcon } from "lucide-react";
-
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
 const accentStyles = [
-  "from-violet-500/15 to-violet-500/5 text-violet-600 dark:text-violet-400",
-  "from-sky-500/15 to-sky-500/5 text-sky-600 dark:text-sky-400",
-  "from-emerald-500/15 to-emerald-500/5 text-emerald-600 dark:text-emerald-400",
-  "from-amber-500/15 to-amber-500/5 text-amber-600 dark:text-amber-400",
-  "from-rose-500/15 to-rose-500/5 text-rose-600 dark:text-rose-400",
+  { bg: "bg-violet-500/10", text: "text-violet-400", border: "group-hover:border-violet-500/30" },
+  { bg: "bg-sky-500/10", text: "text-sky-400", border: "group-hover:border-sky-500/30" },
+  { bg: "bg-emerald-500/10", text: "text-emerald-400", border: "group-hover:border-emerald-500/30" },
+  { bg: "bg-amber-500/10", text: "text-amber-400", border: "group-hover:border-amber-500/30" },
+  { bg: "bg-rose-500/10", text: "text-rose-400", border: "group-hover:border-rose-500/30" },
 ] as const;
 
 export function FeatureCard({
@@ -28,34 +26,28 @@ export function FeatureCard({
   const accent = accentStyles[accentIndex % accentStyles.length];
 
   return (
-    <Link href={href} className="group block h-full">
-      <Card
+    <Link href={href} className="group block">
+      <div
         className={cn(
-          "h-full border-border/60 bg-card/90 shadow-sm transition-all duration-200",
-          "hover:-translate-y-0.5 hover:border-primary/20 hover:shadow-md hover:shadow-primary/5",
+          "relative overflow-hidden rounded-2xl border border-border/60 bg-card p-5 card-hover",
+          accent.border,
         )}
       >
-        <CardHeader className="flex flex-row items-start justify-between gap-3 space-y-0 pb-2">
-          <div
-            className={cn(
-              "flex size-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br",
-              accent,
-            )}
-          >
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/3 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" aria-hidden />
+        <div className="relative flex items-start justify-between gap-3">
+          <div className={cn("flex size-10 shrink-0 items-center justify-center rounded-xl", accent.bg, accent.text)}>
             <Icon className="size-5" strokeWidth={2} />
           </div>
           <ArrowUpRight
-            className="size-4 shrink-0 text-muted-foreground/50 transition-all group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-primary"
+            className="size-4 shrink-0 text-muted-foreground/40 transition-all duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-primary"
             aria-hidden
           />
-        </CardHeader>
-        <CardContent className="pt-0">
-          <CardTitle className="text-base font-semibold">{title}</CardTitle>
-          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-            {description}
-          </p>
-        </CardContent>
-      </Card>
+        </div>
+        <div className="relative mt-3">
+          <p className="font-semibold">{title}</p>
+          <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{description}</p>
+        </div>
+      </div>
     </Link>
   );
 }

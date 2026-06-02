@@ -2,8 +2,12 @@ const GROQ_BASE_URL = "https://api.groq.com/openai/v1/chat/completions";
 
 /** Text model — generous free tier (30 RPM, 14 400 RPD). */
 const TEXT_MODEL = "llama-3.3-70b-versatile";
-/** Vision model for image-based extraction. */
-const VISION_MODEL = "llama-3.2-90b-vision-preview";
+/**
+ * Vision model for image-based extraction.
+ * llama-3.2-90b-vision-preview was decommissioned — replaced with Llama 4 Scout
+ * which is natively multimodal and available on Groq's free tier.
+ */
+const VISION_MODEL = "meta-llama/llama-4-scout-17b-16e-instruct";
 
 export function getGroqApiKey(): string {
   const key = process.env.GROQ_API_KEY?.trim();
