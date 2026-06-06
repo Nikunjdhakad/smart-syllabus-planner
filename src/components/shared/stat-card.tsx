@@ -1,4 +1,7 @@
+"use client";
+
 import type { LucideIcon } from "lucide-react";
+import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 type Accent = "primary" | "emerald" | "amber" | "rose" | "cyan";
@@ -8,36 +11,42 @@ const accentConfig: Record<Accent, {
   value: string;
   glow: string;
   border: string;
+  hoverShadow: string;
 }> = {
   primary: {
-    icon:   "bg-primary/15 text-primary",
-    value:  "text-foreground",
-    glow:   "from-primary/8 to-transparent",
-    border: "border-border/60",
+    icon:        "bg-primary/15 text-primary",
+    value:       "text-foreground",
+    glow:        "from-primary/8 to-transparent",
+    border:      "border-border/60",
+    hoverShadow: "0 8px 32px oklch(0.68 0.22 270 / 0.18), 0 2px 8px oklch(0 0 0 / 0.10)",
   },
   emerald: {
-    icon:   "bg-emerald-500/15 text-emerald-400",
-    value:  "text-emerald-400",
-    glow:   "from-emerald-500/8 to-transparent",
-    border: "border-emerald-500/15",
+    icon:        "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400",
+    value:       "text-emerald-600 dark:text-emerald-400",
+    glow:        "from-emerald-500/8 to-transparent",
+    border:      "border-emerald-500/15",
+    hoverShadow: "0 8px 32px oklch(0.68 0.18 145 / 0.16), 0 2px 8px oklch(0 0 0 / 0.10)",
   },
   amber: {
-    icon:   "bg-amber-500/15 text-amber-400",
-    value:  "text-amber-400",
-    glow:   "from-amber-500/8 to-transparent",
-    border: "border-amber-500/15",
+    icon:        "bg-amber-500/15 text-amber-700 dark:text-amber-400",
+    value:       "text-amber-700 dark:text-amber-400",
+    glow:        "from-amber-500/8 to-transparent",
+    border:      "border-amber-500/15",
+    hoverShadow: "0 8px 32px oklch(0.74 0.14 85 / 0.18), 0 2px 8px oklch(0 0 0 / 0.10)",
   },
   rose: {
-    icon:   "bg-rose-500/15 text-rose-400",
-    value:  "text-rose-400",
-    glow:   "from-rose-500/8 to-transparent",
-    border: "border-rose-500/15",
+    icon:        "bg-rose-500/15 text-rose-600 dark:text-rose-400",
+    value:       "text-rose-600 dark:text-rose-400",
+    glow:        "from-rose-500/8 to-transparent",
+    border:      "border-rose-500/15",
+    hoverShadow: "0 8px 32px oklch(0.68 0.22 25 / 0.16), 0 2px 8px oklch(0 0 0 / 0.10)",
   },
   cyan: {
-    icon:   "bg-cyan-500/15 text-cyan-400",
-    value:  "text-cyan-400",
-    glow:   "from-cyan-500/8 to-transparent",
-    border: "border-cyan-500/15",
+    icon:        "bg-cyan-500/15 text-cyan-700 dark:text-cyan-400",
+    value:       "text-cyan-700 dark:text-cyan-400",
+    glow:        "from-cyan-500/8 to-transparent",
+    border:      "border-cyan-500/15",
+    hoverShadow: "0 8px 32px oklch(0.65 0.18 200 / 0.16), 0 2px 8px oklch(0 0 0 / 0.10)",
   },
 };
 
@@ -59,11 +68,15 @@ export function StatCard({
   const cfg = accentConfig[accent];
 
   return (
-    <div
+    <motion.div
+      whileHover={{
+        y: -3,
+        boxShadow: cfg.hoverShadow,
+        transition: { duration: 0.2, ease: "easeOut" },
+      }}
       className={cn(
-        "group relative overflow-hidden rounded-[24px] border bg-card p-5",
-        "transition-all duration-300 hover:-translate-y-0.5",
-        "hover:shadow-[0_6px_24px_oklch(0_0_0/0.12)]",
+        "group relative overflow-hidden rounded-card border bg-card p-5",
+        "transition-colors duration-200",
         cfg.border,
         className,
       )}
@@ -76,23 +89,17 @@ export function StatCard({
 
       <div className="relative flex items-start justify-between gap-3">
         <div className="min-w-0 space-y-2">
-          {/* Label — overline style, clearly readable */}
-          <p className="text-[0.6875rem] font-bold uppercase tracking-[0.08em] text-muted-foreground">
-            {label}
-          </p>
-          {/* Value — dominant number */}
-          <p className={cn("count-up font-bold tabular-nums leading-none", cfg.value)}
-             style={{ fontSize: "clamp(1.75rem, 4vw, 2.25rem)", letterSpacing: "-0.03em" }}>
+          <p className="text-overline text-muted-foreground">{label}</p>
+          <p className={cn("count-up stat-dominant tabular-nums leading-none", cfg.value)}>
             {value}
           </p>
-          {/* Hint — caption */}
           {hint && (
-            <p className="text-xs text-muted-foreground leading-snug">{hint}</p>
+            <p className="text-caption text-muted-foreground leading-snug">{hint}</p>
           )}
         </div>
         <div
           className={cn(
-            "flex size-11 shrink-0 items-center justify-center rounded-[20px]",
+            "flex size-11 shrink-0 items-center justify-center rounded-card-sm",
             "transition-transform duration-300 group-hover:scale-110",
             cfg.icon,
           )}
@@ -100,6 +107,6 @@ export function StatCard({
           <Icon className="size-5" strokeWidth={2} />
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

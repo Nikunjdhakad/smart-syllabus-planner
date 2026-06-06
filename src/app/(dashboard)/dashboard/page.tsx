@@ -86,16 +86,16 @@ export default async function DashboardPage() {
         )}
 
         {/* Top KPI strip */}
-        <section className="stagger grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          {/* Readiness Score — special card */}
-          <div className="relative overflow-hidden rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/15 via-card to-card p-5">
+        <section className="stagger grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          {/* Readiness Score — hero card (dominant element) */}
+          <div className="relative overflow-hidden rounded-hero border border-primary/20 bg-gradient-to-br from-primary/15 via-card to-card p-5">
             <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent" aria-hidden />
             <div className="relative">
-              <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">Readiness Score</p>
-              <p className={`mt-1.5 text-3xl font-bold tabular-nums ${readinessColor}`}>{readinessScore}</p>
-              <p className={`text-xs font-medium ${readinessColor}`}>{readinessLabel}</p>
+              <p className="text-overline text-muted-foreground">Readiness Score</p>
+              <p className={`mt-1.5 stat-dominant tabular-nums ${readinessColor}`}>{readinessScore}</p>
+              <p className={`text-caption font-medium ${readinessColor}`}>{readinessLabel}</p>
               {/* Mini progress bar */}
-              <div className="mt-3 h-1 w-full overflow-hidden rounded-full bg-white/10">
+              <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-white/10">
                 <div
                   className="h-full rounded-full bg-primary transition-all duration-1000"
                   style={{ width: `${readinessScore}%` }}
@@ -118,10 +118,10 @@ export default async function DashboardPage() {
             accent="amber"
           />
           {daysUntilExam !== null ? (
-            <div className="relative overflow-hidden rounded-2xl border border-amber-500/20 bg-amber-500/5 p-5">
-              <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">Exam Countdown</p>
-              <p className="mt-1.5 text-3xl font-bold tabular-nums text-amber-400">{daysUntilExam}</p>
-              <p className="text-xs text-muted-foreground">days remaining</p>
+            <div className="relative overflow-hidden rounded-card border border-amber-500/20 bg-amber-500/5 p-5">
+              <p className="text-overline text-muted-foreground">Exam Countdown</p>
+              <p className="mt-1.5 stat-dominant tabular-nums text-amber-400">{daysUntilExam}</p>
+              <p className="text-caption text-muted-foreground">days remaining</p>
               <div className="mt-3 h-1 w-full overflow-hidden rounded-full bg-white/10">
                 <div className="h-full rounded-full bg-amber-400/60" style={{ width: "100%" }} />
               </div>
@@ -138,7 +138,7 @@ export default async function DashboardPage() {
         </section>
 
         {/* Second row: stats */}
-        <section className="grid gap-3 sm:grid-cols-3">
+        <section className="grid gap-4 sm:grid-cols-3">
           <StatCard
             label="Completed tasks"
             value={String(metrics?.completedTasks ?? 0)}
@@ -175,11 +175,11 @@ export default async function DashboardPage() {
         {/* Module cards */}
         <section>
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground">
+            <h2 className="text-overline text-muted-foreground">
               Modules
             </h2>
           </div>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="stagger grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <FeatureCard href={ROUTES.syllabus} icon={BookOpen} title="Syllabus" description="Upload and manage subjects and topics." accentIndex={0} />
             <FeatureCard href={ROUTES.planner} icon={CalendarDays} title="Study Planner" description="Set exam dates and generate schedules." accentIndex={1} />
             <FeatureCard href={ROUTES.progress} icon={LineChart} title="Progress" description="Track completion and analytics." accentIndex={2} />

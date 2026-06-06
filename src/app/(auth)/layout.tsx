@@ -84,11 +84,13 @@ export default function AuthLayout({
       </aside>
 
       {/* Right panel */}
-      <div className="flex flex-1 flex-col items-center justify-center bg-background px-4 py-10 sm:px-6">
-        <div className="mb-8 lg:hidden">
+      <div className="relative flex flex-1 flex-col items-center justify-center bg-background px-4 py-10 sm:px-6">
+        <div className="pointer-events-none absolute inset-0 bg-hero-gradient" aria-hidden />
+        <div className="pointer-events-none absolute inset-0 bg-grid-pattern opacity-40" aria-hidden />
+        <div className="relative mb-8 lg:hidden">
           <BrandLogo href={ROUTES.home} showTagline />
         </div>
-        {children}
+        <div className="relative">{children}</div>
       </div>
     </div>
   );

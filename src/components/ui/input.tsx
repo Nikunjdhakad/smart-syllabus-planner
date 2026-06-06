@@ -9,11 +9,11 @@ function Input({ className, type, ...props }: React.ComponentProps<"input">) {
       type={type}
       data-slot="input"
       className={cn(
-        // Size & radius — 16px radius from design token
-        "h-10 w-full min-w-0 rounded-[16px]",
+        // Size & radius — input token (16px)
+        "h-10 w-full min-w-0 rounded-input",
         // Colors — stronger contrast than default
         "border border-border/80 bg-background/80 px-3.5 py-2",
-        "text-[0.9375rem] text-foreground",
+        "text-body text-foreground",
         "placeholder:text-muted-foreground/60",
         // Transitions
         "transition-all duration-150 outline-none",

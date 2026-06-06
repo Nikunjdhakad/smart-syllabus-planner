@@ -69,7 +69,7 @@ export function SidebarNav({
                 "size-[1.125rem] shrink-0 transition-colors duration-200",
                 active
                   ? "text-primary"
-                  : "text-foreground/50 group-hover:text-foreground/80",
+                  : "text-foreground/70 group-hover:text-foreground/80",
               )}
               strokeWidth={active ? 2.25 : 2}
             />

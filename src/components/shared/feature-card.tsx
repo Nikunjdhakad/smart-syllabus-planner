@@ -29,23 +29,23 @@ export function FeatureCard({
     <Link href={href} className="group block">
       <div
         className={cn(
-          "relative overflow-hidden rounded-2xl border border-border/60 bg-card p-5 card-hover",
+          "relative overflow-hidden rounded-card border border-border/60 bg-card p-5 card-hover",
           accent.border,
         )}
       >
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/3 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" aria-hidden />
         <div className="relative flex items-start justify-between gap-3">
-          <div className={cn("flex size-10 shrink-0 items-center justify-center rounded-xl", accent.bg, accent.text)}>
+          <div className={cn("flex size-10 shrink-0 items-center justify-center rounded-card-sm", accent.bg, accent.text)}>
             <Icon className="size-5" strokeWidth={2} />
           </div>
           <ArrowUpRight
-            className="size-4 shrink-0 text-muted-foreground/40 transition-all duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-primary"
+            className="size-4 shrink-0 text-muted-foreground/70 transition-all duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-primary"
             aria-hidden
           />
         </div>
         <div className="relative mt-3">
-          <p className="font-semibold">{title}</p>
-          <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{description}</p>
+          <p className="text-heading-3 font-semibold">{title}</p>
+          <p className="mt-1.5 text-body-sm leading-relaxed text-muted-foreground">{description}</p>
         </div>
       </div>
     </Link>

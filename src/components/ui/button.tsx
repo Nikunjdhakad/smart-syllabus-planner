@@ -1,5 +1,6 @@
 import { Button as ButtonPrimitive } from "@base-ui/react/button"
 import { cva, type VariantProps } from "class-variance-authority"
+import { motion, type TargetAndTransition } from "framer-motion"
 
 import { cn } from "@/lib/utils"
 
@@ -8,9 +9,8 @@ const buttonVariants = cva(
   [
     "group/button inline-flex shrink-0 items-center justify-center",
     "text-sm font-semibold whitespace-nowrap",
-    "transition-all duration-200 outline-none select-none",
+    "transition-colors duration-150 outline-none select-none",
     "focus-visible:ring-3 focus-visible:ring-ring/60",
-    "active:not-aria-[haspopup]:translate-y-px",
     "disabled:pointer-events-none disabled:opacity-40",
     "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   ].join(" "),
@@ -21,7 +21,7 @@ const buttonVariants = cva(
         default: [
           "bg-primary text-primary-foreground border border-transparent",
           "shadow-[0_2px_12px_oklch(0.68_0.22_270/0.30)]",
-          "hover:bg-primary/90 hover:shadow-[0_4px_20px_oklch(0.68_0.22_270/0.40)] hover:-translate-y-px",
+          "hover:bg-primary/90 hover:shadow-[0_4px_20px_oklch(0.68_0.22_270/0.45)]",
         ].join(" "),
         /* Outline — medium emphasis */
         outline: [
@@ -66,18 +66,49 @@ const buttonVariants = cva(
   }
 )
 
+// Framer Motion whileHover/whileTap values by variant
+const MOTION_HOVER: Record<string, TargetAndTransition> = {
+  default:     { y: -1, scale: 1.01 },
+  outline:     { y: -1 },
+  secondary:   { y: -1 },
+  ghost:       { scale: 1.02 },
+  destructive: { scale: 1.01 },
+  link:        {},
+}
+
+const MOTION_TAP: Record<string, TargetAndTransition> = {
+  default:     { y: 0, scale: 0.97 },
+  outline:     { y: 0, scale: 0.97 },
+  secondary:   { y: 0, scale: 0.97 },
+  ghost:       { scale: 0.96 },
+  destructive: { scale: 0.97 },
+  link:        { scale: 0.98 },
+}
+
 function Button({
   className,
   variant = "default",
   size = "default",
   ...props
 }: ButtonPrimitive.Props & VariantProps<typeof buttonVariants>) {
+  const v = variant ?? "default"
+  const hoverAnim = MOTION_HOVER[v] ?? {}
+  const tapAnim   = MOTION_TAP[v]   ?? {}
+
   return (
-    <ButtonPrimitive
-      data-slot="button"
-      className={cn(buttonVariants({ variant, size, className }))}
-      {...props}
-    />
+    <motion.div
+      whileHover={hoverAnim}
+      whileTap={tapAnim}
+      transition={{ duration: 0.15, ease: "easeOut" }}
+      // Inherit display so it behaves as inline
+      style={{ display: "inline-flex" }}
+    >
+      <ButtonPrimitive
+        data-slot="button"
+        className={cn(buttonVariants({ variant, size, className }))}
+        {...props}
+      />
+    </motion.div>
   )
 }
 

@@ -10,17 +10,17 @@ export function OverdueAlertBanner({ overdueCount }: { overdueCount: number }) {
   return (
     <div
       role="alert"
-      className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-destructive/30 bg-destructive/8 px-5 py-4"
+      className="flex flex-wrap items-center justify-between gap-3 rounded-hero border border-destructive/40 bg-destructive/8 px-5 py-4"
     >
       <div className="flex items-center gap-3">
-        <div className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-destructive/15">
+        <div className="flex size-8 shrink-0 items-center justify-center rounded-card-sm bg-destructive/15">
           <AlertTriangle className="size-4 text-destructive" />
         </div>
         <div>
-          <p className="text-sm font-semibold text-destructive">
+          <p className="text-body-sm font-semibold text-destructive">
             {overdueCount} overdue task{overdueCount > 1 ? "s" : ""} detected
           </p>
-          <p className="text-xs text-destructive/70">Your study plan needs attention.</p>
+          <p className="text-caption text-destructive/70">Your study plan needs attention.</p>
         </div>
       </div>
       <Link

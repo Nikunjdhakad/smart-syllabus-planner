@@ -228,18 +228,18 @@ export default function HomePage() {
               <div
                 key={title}
                 className={cn(
-                  "group relative overflow-hidden rounded-2xl border p-6 card-hover",
+                  "group relative overflow-hidden rounded-card border p-6 card-hover",
                   "bg-card/60 backdrop-blur-sm",
                   border,
                 )}
               >
                 <div className={cn("absolute inset-0 bg-gradient-to-br opacity-50", gradient)} aria-hidden />
                 <div className="relative">
-                  <div className={cn("mb-4 inline-flex size-11 items-center justify-center rounded-xl", iconBg)}>
+                  <div className={cn("mb-4 inline-flex size-11 items-center justify-center rounded-card-sm", iconBg)}>
                     <Icon className="size-5" strokeWidth={2} />
                   </div>
-                  <h3 className="mb-2 font-semibold">{title}</h3>
-                  <p className="text-sm leading-relaxed text-muted-foreground">{description}</p>
+                  <h3 className="mb-2 text-heading-3 font-semibold">{title}</h3>
+                  <p className="text-body-sm leading-relaxed text-muted-foreground">{description}</p>
                 </div>
               </div>
             ))}
@@ -259,7 +259,7 @@ export default function HomePage() {
               {workflow.map(({ step, title, desc }) => (
                 <div key={step} className="relative">
                   <div className="mb-4 flex items-center gap-3">
-                    <span className="flex size-10 items-center justify-center rounded-xl bg-primary/15 text-sm font-bold text-primary">
+                    <span className="flex size-10 items-center justify-center rounded-card-sm bg-primary/15 text-sm font-bold text-primary">
                       {step}
                     </span>
                     <div className="h-px flex-1 bg-gradient-to-r from-primary/30 to-transparent lg:hidden" />
@@ -274,7 +274,7 @@ export default function HomePage() {
 
         {/* CTA */}
         <section className="mx-auto w-full max-w-6xl px-4 py-24 sm:px-6">
-          <div className="relative overflow-hidden rounded-3xl border border-primary/20 bg-gradient-to-br from-primary/15 via-primary/5 to-transparent p-10 text-center sm:p-16">
+          <div className="relative overflow-hidden rounded-hero border border-primary/20 bg-gradient-to-br from-primary/15 via-primary/5 to-transparent p-10 text-center sm:p-16">
             <div className="pointer-events-none absolute -right-16 -top-16 size-64 rounded-full bg-primary/10 blur-3xl" aria-hidden />
             <div className="pointer-events-none absolute -bottom-16 -left-16 size-64 rounded-full bg-primary/8 blur-3xl" aria-hidden />
             <div className="relative">

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { CalendarClock, CheckCircle2, Clock } from "lucide-react";
+import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import { ROUTES } from "@/lib/constants";
 import { cn } from "@/lib/utils";
@@ -14,8 +15,6 @@ function formatDueDate(iso: string): string {
   if (diff === 0) return "Today";
   if (diff === 1) return "Tomorrow";
   if (diff < 0) return `${Math.abs(diff)}d overdue`;
-  // Use "en-US" explicitly so server (Vercel) and client produce identical output
-  // and avoid React hydration mismatches from locale differences.
   return d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
 }
 
@@ -60,10 +59,12 @@ export function UpcomingTasks({ tasks }: { tasks: TaskSummaryItem[] }) {
             const dueText = formatDueDate(task.dueDate);
             const isOverdue = dueText.includes("overdue");
             return (
-              <li
+              <motion.li
                 key={task.taskId}
+                initial={{ opacity: 0, x: -8 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.25, delay: i * 0.04, ease: [0.22, 1, 0.36, 1] }}
                 className="flex items-center gap-3 px-5 py-3.5 transition-colors hover:bg-white/2"
-                style={{ animationDelay: `${i * 40}ms` }}
               >
                 <div className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-primary/8">
                   <Clock className="size-3.5 text-primary/70" />
@@ -74,10 +75,10 @@ export function UpcomingTasks({ tasks }: { tasks: TaskSummaryItem[] }) {
                     {dueText}
                   </p>
                 </div>
-                <span className={cn("shrink-0 rounded-full border px-2 py-0.5 text-xs font-medium", cfg.color)}>
+                <span className={cn("shrink-0 rounded-full border px-2 py-0.5 text-xs font-medium", cfg!.color)}>
                   {task.priority}
                 </span>
-              </li>
+              </motion.li>
             );
           })}
         </ul>

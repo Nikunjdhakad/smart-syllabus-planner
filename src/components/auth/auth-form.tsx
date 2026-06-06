@@ -226,10 +226,10 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
     <div className="w-full max-w-sm">
       {/* Header */}
       <div className="mb-8 text-center">
-        <div className="mx-auto mb-4 flex size-12 items-center justify-center rounded-2xl bg-primary/15">
+        <div className="mx-auto mb-4 flex size-12 items-center justify-center rounded-card-sm bg-primary/15">
           <Sparkles className="size-6 text-primary" />
         </div>
-        <h1 className="text-2xl font-bold tracking-tight">
+        <h1 className="text-heading-2 font-bold">
           {isLogin ? "Welcome back" : "Create your account"}
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
@@ -240,7 +240,7 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
       </div>
 
       {/* Form card */}
-      <div className="rounded-2xl border border-border/60 bg-card/80 p-6 shadow-xl shadow-black/20 backdrop-blur-sm">
+      <div className="rounded-card border border-border/60 bg-card/80 p-6 shadow-xl shadow-black/20 backdrop-blur-sm">
         <form onSubmit={onSubmit} className="space-y-4" noValidate>
           {!isLogin && (
             <div className="space-y-1.5">
