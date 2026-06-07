@@ -11,7 +11,7 @@ import {
   Target,
   ShieldAlert,
 } from "lucide-react";
-
+import { StudyCoachCard } from "@/components/dashboard/study-coach-card";
 import { AiSuggestionCard } from "@/components/dashboard/ai-suggestion-card";
 import { OverdueAlertBanner } from "@/components/dashboard/overdue-alert-banner";
 import { RevisionOverview } from "@/components/dashboard/revision-overview";
@@ -168,7 +168,10 @@ export default async function DashboardPage() {
 
         {/* Revisions overview */}
         {revisions && <RevisionOverview buckets={revisions} />}
-
+        
+        {/* Study Coach */}
+        <StudyCoachCard />
+        
         {/* AI suggestion */}
         <AiSuggestionCard />
 
