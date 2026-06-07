@@ -1,51 +1,44 @@
 import { Button as ButtonPrimitive } from "@base-ui/react/button"
 import { cva, type VariantProps } from "class-variance-authority"
-import { motion, type TargetAndTransition } from "framer-motion"
-
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  // Base — consistent font, spacing, transition; radius via --radius-btn token
   [
     "group/button inline-flex shrink-0 items-center justify-center",
     "text-sm font-semibold whitespace-nowrap",
-    "transition-colors duration-150 outline-none select-none",
-    "focus-visible:ring-3 focus-visible:ring-ring/60",
+    "transition-all duration-200 outline-none select-none",
+    "focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-offset-1",
+    "active:not-aria-[haspopup]:scale-[0.98]",
     "disabled:pointer-events-none disabled:opacity-40",
     "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   ].join(" "),
   {
     variants: {
       variant: {
-        /* Primary — violet, glowing, high emphasis */
         default: [
           "bg-primary text-primary-foreground border border-transparent",
-          "shadow-[0_2px_12px_oklch(0.68_0.22_270/0.30)]",
-          "hover:bg-primary/90 hover:shadow-[0_4px_20px_oklch(0.68_0.22_270/0.45)]",
+          "shadow-[0_2px_8px_rgba(124,58,237,0.25)]",
+          "hover:bg-primary/90 hover:shadow-[0_4px_16px_rgba(124,58,237,0.35)] hover:-translate-y-px",
         ].join(" "),
-        /* Outline — medium emphasis */
         outline: [
-          "border border-border/70 bg-transparent text-foreground",
-          "hover:bg-white/6 hover:border-border",
-          "dark:border-white/12 dark:hover:bg-white/8",
+          "border border-border bg-background text-foreground",
+          "hover:bg-muted hover:border-border",
+          "shadow-sm",
         ].join(" "),
-        /* Secondary — low emphasis surface */
         secondary: [
-          "bg-secondary text-secondary-foreground border border-transparent",
-          "hover:bg-secondary/70",
+          "bg-secondary text-secondary-foreground border border-border/60",
+          "hover:bg-secondary/80",
+          "shadow-sm",
         ].join(" "),
-        /* Ghost — minimal, used in nav */
         ghost: [
           "border-transparent bg-transparent text-muted-foreground",
-          "hover:bg-white/6 hover:text-foreground",
-          "dark:hover:bg-white/8",
+          "hover:bg-muted hover:text-foreground",
         ].join(" "),
-        /* Destructive */
         destructive: [
-          "bg-destructive/15 text-destructive border border-destructive/25",
-          "hover:bg-destructive/25",
+          "bg-destructive/10 text-destructive border border-destructive/30",
+          "hover:bg-destructive/20",
         ].join(" "),
-        link: "text-primary underline-offset-4 hover:underline border-transparent bg-transparent",
+        link: "text-primary underline-offset-4 hover:underline border-transparent bg-transparent shadow-none",
       },
       size: {
         default: "h-9 gap-2 px-4 rounded-[14px]",
@@ -66,49 +59,18 @@ const buttonVariants = cva(
   }
 )
 
-// Framer Motion whileHover/whileTap values by variant
-const MOTION_HOVER: Record<string, TargetAndTransition> = {
-  default:     { y: -1, scale: 1.01 },
-  outline:     { y: -1 },
-  secondary:   { y: -1 },
-  ghost:       { scale: 1.02 },
-  destructive: { scale: 1.01 },
-  link:        {},
-}
-
-const MOTION_TAP: Record<string, TargetAndTransition> = {
-  default:     { y: 0, scale: 0.97 },
-  outline:     { y: 0, scale: 0.97 },
-  secondary:   { y: 0, scale: 0.97 },
-  ghost:       { scale: 0.96 },
-  destructive: { scale: 0.97 },
-  link:        { scale: 0.98 },
-}
-
 function Button({
   className,
   variant = "default",
   size = "default",
   ...props
 }: ButtonPrimitive.Props & VariantProps<typeof buttonVariants>) {
-  const v = variant ?? "default"
-  const hoverAnim = MOTION_HOVER[v] ?? {}
-  const tapAnim   = MOTION_TAP[v]   ?? {}
-
   return (
-    <motion.div
-      whileHover={hoverAnim}
-      whileTap={tapAnim}
-      transition={{ duration: 0.15, ease: "easeOut" }}
-      // Inherit display so it behaves as inline
-      style={{ display: "inline-flex" }}
-    >
-      <ButtonPrimitive
-        data-slot="button"
-        className={cn(buttonVariants({ variant, size, className }))}
-        {...props}
-      />
-    </motion.div>
+    <ButtonPrimitive
+      data-slot="button"
+      className={cn(buttonVariants({ variant, size, className }))}
+      {...props}
+    />
   )
 }
 

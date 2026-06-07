@@ -5,6 +5,7 @@ import { useState } from "react";
 
 import { BrandLogo } from "@/components/brand/brand-logo";
 import { SidebarNav } from "@/components/layout/sidebar-nav";
+import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -19,7 +20,7 @@ export function MobileHeader({ title, onLogout }: { title: string; onLogout: () 
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="flex h-14 items-center justify-between border-b border-border/60 bg-background/80 px-4 backdrop-blur-xl lg:hidden">
+    <header className="flex h-14 items-center justify-between border-b border-border/60 bg-background/90 px-4 backdrop-blur-xl lg:hidden">
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetTrigger render={<Button variant="ghost" size="icon" aria-label="Open menu" />}>
           <Menu className="size-5" />
@@ -32,7 +33,11 @@ export function MobileHeader({ title, onLogout }: { title: string; onLogout: () 
           <div className="flex flex-1 flex-col p-3">
             <SidebarNav onNavigate={() => setOpen(false)} />
           </div>
-          <div className="border-t border-sidebar-border p-3">
+          <div className="space-y-2 border-t border-sidebar-border p-3">
+            <div className="flex items-center justify-between px-1">
+              <span className="text-xs font-medium text-muted-foreground">Theme</span>
+              <ThemeToggle />
+            </div>
             <Button
               variant="ghost"
               className="w-full justify-start text-muted-foreground"
@@ -44,7 +49,7 @@ export function MobileHeader({ title, onLogout }: { title: string; onLogout: () 
         </SheetContent>
       </Sheet>
       <p className="truncate text-sm font-semibold">{title}</p>
-      <div className="size-8" aria-hidden />
+      <ThemeToggle />
     </header>
   );
 }

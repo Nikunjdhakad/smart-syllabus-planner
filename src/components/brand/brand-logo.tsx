@@ -18,10 +18,10 @@ export function BrandLogo({
     <div className={cn("flex items-center gap-2.5", className)}>
       <div
         className={cn(
-          "flex size-8 items-center justify-center rounded-xl",
+          "flex size-8 items-center justify-center rounded-[14px]",
           inverted
-            ? "bg-white/15 text-white"
-            : "bg-primary text-primary-foreground shadow-md shadow-primary/30",
+            ? "bg-white/20 text-white"
+            : "bg-primary text-primary-foreground shadow-[0_2px_8px_rgba(124,58,237,0.35)]",
         )}
       >
         <GraduationCap className="size-4" strokeWidth={2.5} />
@@ -31,7 +31,7 @@ export function BrandLogo({
           {APP_NAME}
         </span>
         {showTagline && (
-          <span className={cn("block text-xs", inverted ? "text-white/60" : "text-muted-foreground")}>
+          <span className={cn("block text-[0.6875rem]", inverted ? "text-white/65" : "text-muted-foreground")}>
             Academic planner
           </span>
         )}

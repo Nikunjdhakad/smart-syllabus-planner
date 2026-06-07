@@ -53,8 +53,8 @@ export function SidebarNav({
               "group relative flex items-center gap-3 rounded-[11px] px-3 py-2.5",
               "text-[0.875rem] font-medium transition-all duration-200",
               active
-                ? "bg-primary/15 text-foreground shadow-sm"
-                : "text-foreground/60 hover:bg-white/6 hover:text-foreground",
+                ? "bg-primary/10 text-primary dark:bg-primary/15 dark:text-primary"
+                : "text-foreground/60 hover:bg-muted hover:text-foreground dark:hover:bg-white/6",
             )}
           >
             {active && (
@@ -64,12 +64,12 @@ export function SidebarNav({
                 aria-hidden
               />
             )}
-            <Icon
+      <Icon
               className={cn(
-                "size-[1.125rem] shrink-0 transition-colors duration-200",
+                "size-[1.0625rem] shrink-0 transition-colors duration-200",
                 active
                   ? "text-primary"
-                  : "text-foreground/70 group-hover:text-foreground/80",
+                  : "text-foreground/50 group-hover:text-foreground/70",
               )}
               strokeWidth={active ? 2.25 : 2}
             />

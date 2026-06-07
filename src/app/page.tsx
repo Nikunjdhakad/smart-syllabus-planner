@@ -90,25 +90,25 @@ export default function HomePage() {
       <div className="pointer-events-none fixed inset-0 bg-hero-gradient" aria-hidden />
       <div className="pointer-events-none fixed inset-0 bg-grid-pattern opacity-100" aria-hidden />
 
-      {/* Floating blobs */}
+      {/* Floating blobs — toned down in light mode via opacity */}
       <div
-        className="pointer-events-none fixed -left-32 -top-32 size-96 blob opacity-20"
-        style={{ background: "radial-gradient(circle, oklch(0.65 0.22 270 / 0.6), transparent 70%)" }}
+        className="pointer-events-none fixed -left-32 -top-32 size-96 blob opacity-30 dark:opacity-20"
+        style={{ background: "radial-gradient(circle, rgba(124,58,237,0.5), transparent 70%)" }}
         aria-hidden
       />
       <div
-        className="pointer-events-none fixed -right-32 top-1/3 size-80 blob opacity-15"
-        style={{ background: "radial-gradient(circle, oklch(0.62 0.18 200 / 0.5), transparent 70%)", animationDelay: "-3s" }}
+        className="pointer-events-none fixed -right-32 top-1/3 size-80 blob opacity-20 dark:opacity-15"
+        style={{ background: "radial-gradient(circle, rgba(6,182,212,0.4), transparent 70%)", animationDelay: "-3s" }}
         aria-hidden
       />
       <div
-        className="pointer-events-none fixed bottom-0 left-1/2 size-96 blob opacity-10"
-        style={{ background: "radial-gradient(circle, oklch(0.65 0.18 300 / 0.4), transparent 70%)", animationDelay: "-6s" }}
+        className="pointer-events-none fixed bottom-0 left-1/2 size-96 blob opacity-15 dark:opacity-10"
+        style={{ background: "radial-gradient(circle, rgba(16,185,129,0.3), transparent 70%)", animationDelay: "-6s" }}
         aria-hidden
       />
 
       {/* Header */}
-      <header className="relative z-20 border-b border-white/8 bg-background/60 backdrop-blur-xl">
+      <header className="relative z-20 border-b border-border bg-background/90 backdrop-blur-xl">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6">
           <BrandLogo href={ROUTES.home} />
           <nav className="flex items-center gap-2">

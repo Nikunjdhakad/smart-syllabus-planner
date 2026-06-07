@@ -2,7 +2,6 @@
 
 import { AppSidebar } from "@/components/layout/app-sidebar";
 import { MobileHeader } from "@/components/layout/mobile-header";
-import { PageTransition } from "@/components/motion/page-transition";
 import { ROUTES } from "@/lib/constants";
 
 export function DashboardShell({
@@ -27,10 +26,10 @@ export function DashboardShell({
         <MobileHeader title={title} onLogout={() => void handleLogout()} />
 
         {/* Desktop page header */}
-        <header className="hidden shrink-0 border-b border-border/60 bg-background/80 px-8 py-6 backdrop-blur-xl lg:block">
-          <h1 className="text-heading-1 text-foreground">{title}</h1>
+        <header className="hidden shrink-0 border-b border-border bg-background/95 px-8 py-5 backdrop-blur-xl lg:block shadow-sm">
+          <h1 className="text-xl font-bold tracking-tight text-foreground">{title}</h1>
           {description && (
-            <p className="mt-2 max-w-2xl text-body text-muted-foreground leading-relaxed">
+            <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-muted-foreground">
               {description}
             </p>
           )}
@@ -38,18 +37,12 @@ export function DashboardShell({
 
         {/* Main content */}
         <main className="relative flex-1 overflow-y-auto bg-background">
-          {/* Top gradient accent line */}
           <div
-            className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent"
-            aria-hidden
-          />
-          {/* Subtle radial glow from top */}
-          <div
-            className="pointer-events-none absolute inset-x-0 top-0 h-64 bg-[radial-gradient(ellipse_80%_40%_at_50%_0%,oklch(0.65_0.22_270/0.06),transparent)]"
+            className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/25 to-transparent"
             aria-hidden
           />
           <div className="relative p-6 sm:p-8">
-            <PageTransition>{children}</PageTransition>
+            <div className="page-enter">{children}</div>
           </div>
         </main>
       </div>
