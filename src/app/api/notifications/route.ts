@@ -33,10 +33,17 @@ export async function GET(request: Request) {
 
     await connectDB();
 
-    // Auto-generate smart notifications on each fetch (deduplicated internally)
+    // Auto-generate smart notifications on each fetch.
+    // The engine deduplicates by (userId, type, UTC day) regardless of read state,
+    // so read notifications are never recreated until the next calendar day.
     await generateSmartNotifications(session.userId).catch(() => {});
 
-    const query: Record<string, unknown> = { userId: session.userId };
+    const query: Record<string, unknown> = {
+      userId: session.userId,
+      // Exclude dismissed notifications — they are kept as dedup sentinels
+      // but must not appear in the UI.
+      "metadata.dismissed": { $ne: true },
+    };
     if (unreadOnly) query.read = false;
 
     const [notifications, unreadCount] = await Promise.all([
@@ -44,7 +51,11 @@ export async function GET(request: Request) {
         .sort({ createdAt: -1 })
         .limit(limit)
         .lean() as Promise<Record<string, unknown>[]>,
-      Notification.countDocuments({ userId: session.userId, read: false }),
+      Notification.countDocuments({
+        userId: session.userId,
+        read: false,
+        "metadata.dismissed": { $ne: true },
+      }),
     ]);
 
     return jsonSuccess({

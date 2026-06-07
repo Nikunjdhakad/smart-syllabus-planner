@@ -29,7 +29,9 @@ export async function PATCH(request: Request, context: RouteContext) {
   }
 }
 
-/** DELETE /api/notifications/[id] — delete one */
+/** DELETE /api/notifications/[id] — soft-delete: mark as read rather than destroy,
+ *  so the daily dedup window in generate.ts is preserved and the notification
+ *  is not recreated on the next page load while the underlying condition persists. */
 export async function DELETE(_request: Request, context: RouteContext) {
   try {
     const session = await getSession();
@@ -38,7 +40,13 @@ export async function DELETE(_request: Request, context: RouteContext) {
     const { notificationId } = await context.params;
     await connectDB();
 
-    await Notification.deleteOne({ notificationId, userId: session.userId });
+    // Soft-delete: mark read=true and set a dismissed flag so the UI hides it
+    // but the document remains as a dedup sentinel until tomorrow.
+    await Notification.updateOne(
+      { notificationId, userId: session.userId },
+      { read: true, "metadata.dismissed": true },
+    );
+
     return jsonSuccess({ deleted: true });
   } catch (error) {
     return handleApiError(error);
