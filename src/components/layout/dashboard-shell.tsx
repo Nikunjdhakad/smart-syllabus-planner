@@ -2,6 +2,7 @@
 
 import { AppSidebar } from "@/components/layout/app-sidebar";
 import { MobileHeader } from "@/components/layout/mobile-header";
+import { NotificationTrigger } from "@/components/notifications/notification-trigger";
 import { ROUTES } from "@/lib/constants";
 
 export function DashboardShell({
@@ -26,13 +27,18 @@ export function DashboardShell({
         <MobileHeader title={title} onLogout={() => void handleLogout()} />
 
         {/* Desktop page header */}
-        <header className="hidden shrink-0 border-b border-border bg-background/95 px-8 py-5 backdrop-blur-xl lg:block shadow-sm">
-          <h1 className="text-xl font-bold tracking-tight text-foreground">{title}</h1>
-          {description && (
-            <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-              {description}
-            </p>
-          )}
+        <header className="hidden shrink-0 border-b border-border bg-background/95 px-8 py-5 backdrop-blur-xl lg:flex lg:items-start lg:justify-between shadow-sm">
+          <div>
+            <h1 className="text-xl font-bold tracking-tight text-foreground">{title}</h1>
+            {description && (
+              <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+                {description}
+              </p>
+            )}
+          </div>
+          <div className="ml-4 shrink-0 pt-0.5">
+            <NotificationTrigger />
+          </div>
         </header>
 
         {/* Main content */}

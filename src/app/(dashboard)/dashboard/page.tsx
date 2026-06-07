@@ -16,6 +16,7 @@ import { AiSuggestionCard } from "@/components/dashboard/ai-suggestion-card";
 import { OverdueAlertBanner } from "@/components/dashboard/overdue-alert-banner";
 import { RevisionOverview } from "@/components/dashboard/revision-overview";
 import { UpcomingTasks } from "@/components/dashboard/upcoming-tasks";
+import { RecentNotificationsWidget } from "@/components/notifications/recent-notifications-widget";
 import { getSession } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
 import { ROUTES } from "@/lib/constants";
@@ -168,6 +169,11 @@ export default async function DashboardPage() {
 
         {/* Revisions overview */}
         {revisions && <RevisionOverview buckets={revisions} />}
+
+        {/* Recent notifications widget */}
+        <section>
+          <RecentNotificationsWidget />
+        </section>
         
         {/* Study Coach */}
         <StudyCoachCard />
