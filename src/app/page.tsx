@@ -3,20 +3,20 @@ import {
   ArrowRight,
   Bot,
   CalendarDays,
-  CheckCircle2,
   LineChart,
   RotateCcw,
   ShieldCheck,
-  Sparkles,
   Upload,
   Zap,
 } from "lucide-react";
 
 import { BrandLogo } from "@/components/brand/brand-logo";
+import { LandingHero } from "@/components/landing/landing-hero";
 import { APP_NAME, ROUTES } from "@/lib/constants";
 import { buttonVariants } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+
+
 
 const features = [
   {
@@ -67,13 +67,6 @@ const features = [
     iconBg: "bg-orange-500/15 text-orange-400",
     border: "border-orange-500/20",
   },
-];
-
-const stats = [
-  { value: "6", label: "Core modules" },
-  { value: "AI", label: "Powered extraction" },
-  { value: "∞", label: "Study plans" },
-  { value: "100%", label: "Free to use" },
 ];
 
 const workflow = [
@@ -130,86 +123,8 @@ export default function HomePage() {
       </header>
 
       <main className="relative z-10 flex flex-1 flex-col">
-        {/* Hero */}
-        <section className="mx-auto flex w-full max-w-6xl flex-col items-center px-4 pb-20 pt-24 text-center sm:px-6 sm:pt-32">
-          <div className="fade-in-up">
-            <Badge
-              variant="secondary"
-              className="mb-6 gap-2 border border-primary/20 bg-primary/10 px-4 py-1.5 text-primary"
-            >
-              <Sparkles className="size-3.5" />
-              AI-powered academic planning
-            </Badge>
-          </div>
-
-          <h1
-            className="fade-in-up mx-auto max-w-4xl text-5xl font-bold tracking-tight sm:text-6xl lg:text-7xl"
-            style={{ animationDelay: "80ms" }}
-          >
-            <span className="text-gradient-hero">Finish Your Syllabus</span>
-            <br />
-            <span className="text-foreground/90">Before Exams. Without Stress.</span>
-          </h1>
-
-          <p
-            className="fade-in-up mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-muted-foreground sm:text-xl"
-            style={{ animationDelay: "160ms" }}
-          >
-            Upload your syllabus, set your exam date, and let AI build a personalized study plan.
-            Track progress, get revision reminders, and recover when you fall behind — all in one place.
-          </p>
-
-          <div
-            className="fade-in-up mt-10 flex flex-wrap items-center justify-center gap-3"
-            style={{ animationDelay: "240ms" }}
-          >
-            <Link
-              href={ROUTES.register}
-              className={cn(
-                buttonVariants({ size: "lg" }),
-                "h-12 gap-2 px-8 text-base shadow-lg shadow-primary/25",
-              )}
-            >
-              <Sparkles className="size-4" />
-              Start planning for free
-            </Link>
-            <Link
-              href={ROUTES.login}
-              className={cn(
-                buttonVariants({ variant: "outline", size: "lg" }),
-                "h-12 px-8 text-base border-white/15 bg-white/5 hover:bg-white/10",
-              )}
-            >
-              Sign in
-            </Link>
-          </div>
-
-          <ul
-            className="fade-in-up mt-10 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-sm text-muted-foreground"
-            style={{ animationDelay: "320ms" }}
-          >
-            {["AI syllabus extraction", "Adaptive scheduling", "Spaced revision reminders", "Smart recovery plans"].map((point) => (
-              <li key={point} className="flex items-center gap-2">
-                <CheckCircle2 className="size-4 text-primary" />
-                {point}
-              </li>
-            ))}
-          </ul>
-        </section>
-
-        {/* Stats bar */}
-        <section className="relative border-y border-white/8 bg-white/3 backdrop-blur-sm">
-          <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
-            <div className="grid grid-cols-2 gap-6 sm:grid-cols-4">
-              {stats.map(({ value, label }) => (
-                <div key={label} className="text-center">
-                  <p className="text-3xl font-bold text-gradient-primary">{value}</p>
-                  <p className="mt-1 text-sm text-muted-foreground">{label}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
+        {/* ═══ NEW Animated Hero + Upload Demo + Trust Counters ═══ */}
+        <LandingHero />
 
         {/* Features grid */}
         <section className="mx-auto w-full max-w-6xl px-4 py-24 sm:px-6">
