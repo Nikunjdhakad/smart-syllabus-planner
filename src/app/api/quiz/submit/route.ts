@@ -99,15 +99,21 @@ export async function POST(request: Request) {
           topicId: quiz.topicId,
         });
 
-        // Add one extra revision
-        await Revision.create({
-          userId: session.userId,
-          topicId: quiz.topicId,
-          subjectId: quiz.subjectId,
-          revisionNumber: existingRevisions + 1,
-          dueDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000), // 2 days from now
-          status: "scheduled",
-        });
+        // Add one extra revision (capped at 4)
+        const nextRevisionNumber = Math.min(existingRevisions + 1, 4) as 1 | 2 | 3 | 4;
+
+        if (nextRevisionNumber <= 4) {
+          await Revision.create({
+            userId: session.userId,
+            topicId: quiz.topicId,
+            subjectId: quiz.subjectId,
+            taskId: quiz.taskId,
+            revisionNumber: nextRevisionNumber,
+            scheduledDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000), // 2 days from now
+            topicCompletedAt: new Date(),
+            status: "scheduled",
+          });
+        }
       }
     } else {
       // restudy_required - task remains incomplete

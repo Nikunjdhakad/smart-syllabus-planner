@@ -29,6 +29,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Task not found" }, { status: 404 });
     }
 
+    // Validate required fields
+    if (!task.topicId || !task.subjectId) {
+      return NextResponse.json({ error: "Task must have topic and subject assigned" }, { status: 400 });
+    }
+
     // Get topic and subject details
     const [topic, subject] = await Promise.all([
       Topic.findOne({ topicId: task.topicId }).lean(),
@@ -42,7 +47,7 @@ export async function POST(request: Request) {
     // Determine difficulty and calculate params
     const quizDifficulty = difficulty || determineDifficulty({
       topicName: task.taskTitle,
-      syllabusContent: topic.description,
+      // Topic model doesn't have description, so we use topicName only
     });
 
     const { questionCount, timeLimit } = calculateQuizParams(quizDifficulty);
@@ -51,8 +56,7 @@ export async function POST(request: Request) {
     const questions = await generateQuestions({
       topicName: task.taskTitle,
       subjectName: subject.subjectName,
-      syllabusContent: topic.description,
-      topicDescription: topic.description,
+      // Topic model doesn't have description field - AI will generate questions from topic name and subject
       questionCount,
     });
 
