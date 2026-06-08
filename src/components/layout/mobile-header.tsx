@@ -4,6 +4,7 @@ import { Menu } from "lucide-react";
 import { useState } from "react";
 
 import { BrandLogo } from "@/components/brand/brand-logo";
+import { NotificationTrigger } from "@/components/notifications/notification-trigger";
 import { SidebarNav } from "@/components/layout/sidebar-nav";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { Button } from "@/components/ui/button";
@@ -49,7 +50,11 @@ export function MobileHeader({ title, onLogout }: { title: string; onLogout: () 
         </SheetContent>
       </Sheet>
       <p className="truncate text-sm font-semibold">{title}</p>
-      <ThemeToggle />
+      {/* Right side: notification bell + theme toggle */}
+      <div className="flex items-center gap-1">
+        <NotificationTrigger />
+        <ThemeToggle />
+      </div>
     </header>
   );
 }

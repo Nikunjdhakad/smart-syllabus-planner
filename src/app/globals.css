@@ -373,4 +373,147 @@
       linear-gradient(135deg, #7C3AED, #06B6D4) border-box;
     border: 1px solid transparent;
   }
+
+  /* ═══════════════════════════════════════════════════════════════
+     HERO SECTION — Chaos → AI → Success animations
+     ═══════════════════════════════════════════════════════════════ */
+
+  /* ── Float animation (gentle Y oscillation) ── */
+  @keyframes hero-float {
+    0%, 100% { transform: translateY(0) rotate(var(--float-rotate, 0deg)); }
+    50%      { transform: translateY(var(--float-y, -12px)) rotate(var(--float-rotate, 0deg)); }
+  }
+  .hero-float {
+    animation: hero-float var(--float-duration, 4s) ease-in-out infinite;
+    animation-delay: var(--float-delay, 0s);
+  }
+
+  /* ── Slow rotation for portal rings ── */
+  @keyframes hero-rotate {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+  }
+  .hero-rotate {
+    animation: hero-rotate var(--rotate-duration, 20s) linear infinite;
+  }
+  .hero-rotate-reverse {
+    animation: hero-rotate var(--rotate-duration, 20s) linear infinite reverse;
+  }
+
+  /* ── Portal core pulse ── */
+  @keyframes hero-pulse-glow {
+    0%, 100% { opacity: 0.5; transform: scale(1); }
+    50%      { opacity: 1;   transform: scale(1.08); }
+  }
+  .hero-pulse-glow {
+    animation: hero-pulse-glow 3s ease-in-out infinite;
+  }
+
+  /* ── Data stream drift (left→right for chaos→portal→success) ── */
+  @keyframes hero-drift-right {
+    0%   { transform: translateX(-60px) scale(0.6); opacity: 0; }
+    20%  { opacity: 1; }
+    80%  { opacity: 1; }
+    100% { transform: translateX(60px) scale(0.6); opacity: 0; }
+  }
+  .hero-drift-right {
+    animation: hero-drift-right var(--drift-duration, 4s) linear infinite;
+    animation-delay: var(--drift-delay, 0s);
+  }
+
+  /* ── Rotating gradient border for upload container ── */
+  @keyframes hero-border-rotate {
+    from { --border-angle: 0deg; }
+    to   { --border-angle: 360deg; }
+  }
+  @property --border-angle {
+    syntax: '<angle>';
+    initial-value: 0deg;
+    inherits: false;
+  }
+
+  /* ── Particle drift ── */
+  @keyframes hero-particle-drift {
+    0%, 100% {
+      transform: translate(var(--drift-x1, 0px), var(--drift-y1, 0px));
+      opacity: var(--particle-opacity, 0.3);
+    }
+    33% {
+      transform: translate(var(--drift-x2, 10px), var(--drift-y2, -10px));
+      opacity: calc(var(--particle-opacity, 0.3) * 1.5);
+    }
+    66% {
+      transform: translate(var(--drift-x3, -5px), var(--drift-y3, 5px));
+      opacity: var(--particle-opacity, 0.3);
+    }
+  }
+
+  /* ── Glassmorphism utility ── */
+  .hero-glass {
+    background: rgba(255, 255, 255, 0.07);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+  }
+  :root .hero-glass {
+    background: rgba(255, 255, 255, 0.75);
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    box-shadow: 0 2px 12px rgba(15, 23, 42, 0.06);
+  }
+  .dark .hero-glass {
+    background: rgba(255, 255, 255, 0.07);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: none;
+  }
+
+  /* ── Hero section deep background ── */
+  .hero-bg-deep {
+    background:
+      radial-gradient(ellipse 100% 80% at 50% -20%, rgba(124,58,237,0.10) 0%, transparent 55%),
+      radial-gradient(ellipse 60% 50% at 15% 50%, rgba(99,102,241,0.06) 0%, transparent 50%),
+      radial-gradient(ellipse 60% 50% at 85% 50%, rgba(6,182,212,0.06) 0%, transparent 50%),
+      radial-gradient(ellipse 80% 40% at 50% 110%, rgba(124,58,237,0.04) 0%, transparent 50%),
+      linear-gradient(180deg, #F0F0FF 0%, #E8EAFF 40%, #F0F4FF 100%);
+  }
+  .dark .hero-bg-deep {
+    background:
+      radial-gradient(ellipse 100% 80% at 50% -20%, rgba(124,58,237,0.18) 0%, transparent 55%),
+      radial-gradient(ellipse 60% 50% at 15% 50%, rgba(99,102,241,0.10) 0%, transparent 50%),
+      radial-gradient(ellipse 60% 50% at 85% 50%, rgba(6,182,212,0.10) 0%, transparent 50%),
+      radial-gradient(ellipse 80% 40% at 50% 110%, rgba(124,58,237,0.08) 0%, transparent 50%),
+      linear-gradient(180deg, #07071A 0%, #0A0B1E 40%, #0D0E26 100%);
+  }
+
+  /* ── Counter grow-in ── */
+  @keyframes hero-counter-in {
+    from { opacity: 0; transform: translateY(20px) scale(0.9); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  /* ── Orbit animation for portal particles ── */
+  @keyframes hero-orbit {
+    from { transform: rotate(var(--orbit-start, 0deg)) translateX(var(--orbit-radius, 80px)) rotate(calc(-1 * var(--orbit-start, 0deg))); }
+    to   { transform: rotate(calc(var(--orbit-start, 0deg) + 360deg)) translateX(var(--orbit-radius, 80px)) rotate(calc(-1 * (var(--orbit-start, 0deg) + 360deg))); }
+  }
+
+  /* ── Subtle scale pulse for success cards ── */
+  @keyframes hero-card-glow {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(124,58,237,0); }
+    50%      { box-shadow: 0 0 20px 2px rgba(124,58,237,0.15); }
+  }
+  .dark .hero-card-glow-active {
+    animation: hero-card-glow 4s ease-in-out infinite;
+  }
+
+  /* ── Upload border animation ── */
+  .hero-upload-border {
+    background: conic-gradient(
+      from var(--border-angle, 0deg),
+      rgba(124,58,237,0.6),
+      rgba(6,182,212,0.6),
+      rgba(16,185,129,0.4),
+      rgba(124,58,237,0.6)
+    );
+    animation: hero-border-rotate 4s linear infinite;
+  }
 }

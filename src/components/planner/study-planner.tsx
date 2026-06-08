@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   BookOpen,
   CalendarDays,
@@ -11,12 +12,14 @@ import {
   Clock,
   Flame,
   Loader2,
+  ListTodo,
   Plus,
   RotateCcw,
   Sparkles,
   Target,
   Trash2,
   Trophy,
+  X,
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 
@@ -24,6 +27,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { TaskCompleteBurst } from "@/components/motion/task-complete-burst";
+import { StatCard } from "@/components/shared/stat-card";
+import { QuizModal } from "@/components/quiz/quiz-modal";
 import { cn } from "@/lib/utils";
 import type { PlannerTask, StudyPlanDetail, StudyPlanListItem } from "@/types/study-plan";
 import type { SubjectItem, SyllabusItem } from "@/types/syllabus";
@@ -450,6 +455,9 @@ function PlanItem({
 // ─── main component ──────────────────────────────────────────────
 
 export function StudyPlanner() {
+  const searchParams = useSearchParams();
+  const statusFilter = searchParams.get("status");
+  
   const [plans, setPlans] = useState<StudyPlanListItem[]>([]);
   const [syllabi, setSyllabi] = useState<SyllabusItem[]>([]);
   const [subjects, setSubjects] = useState<SubjectItem[]>([]);
@@ -464,6 +472,11 @@ export function StudyPlanner() {
   const [justCompletedId, setJustCompletedId] = useState<string | null>(null);
   const [showGenerate, setShowGenerate] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  
+  // Quiz state
+  const [showQuiz, setShowQuiz] = useState(false);
+  const [quizTaskId, setQuizTaskId] = useState<string | null>(null);
+  const [quizTaskTitle, setQuizTaskTitle] = useState<string>("");
 
   // Form state
   const [title, setTitle] = useState("");
@@ -474,6 +487,21 @@ export function StudyPlanner() {
 
   // Timeline scroll ref
   const timelineRef = useRef<HTMLDivElement>(null);
+  
+  // Filter tasks based on URL parameter
+  const filteredTasks = statusFilter
+    ? tasks.filter((task) => {
+        if (statusFilter === "completed") return task.status === "completed";
+        if (statusFilter === "pending") return task.status === "pending" || task.status === "in_progress";
+        if (statusFilter === "overdue" || statusFilter === "missed") return task.status === "missed";
+        return true;
+      })
+    : tasks;
+    
+  // Calculate filtered stats
+  const filteredCompleted = filteredTasks.filter((t) => t.status === "completed").length;
+  const filteredPending = filteredTasks.filter((t) => t.status === "pending" || t.status === "in_progress").length;
+  const filteredOverdue = filteredTasks.filter((t) => t.status === "missed").length;
 
   const loadPlans = useCallback(async () => {
     const r = await fetch("/api/study-plans");
@@ -545,22 +573,37 @@ export function StudyPlanner() {
   }
 
   async function handleComplete(taskId: string) {
-    setActingTaskId(taskId); setMessage(null);
-    try {
-      const r = await fetch(`/api/tasks/${taskId}/complete`, { method: "POST" });
-      if (!r.ok) throw new Error(await readApiError(r));
-      const updated = (await r.json()).data.task as PlannerTask;
-      const was = tasks.find((t) => t.taskId === taskId)?.status === "completed";
-      setTasks((p) => p.map((t) => t.taskId === taskId ? { ...t, ...updated } : t));
-      if (!was && updated.status === "completed" && selectedPlanId) {
-        updatePlanCounts(selectedPlanId, 1);
-        // Trigger burst animation
-        setJustCompletedId(taskId);
-        setTimeout(() => setJustCompletedId(null), 700);
-      }
-    } catch (err) {
-      setMessage({ type: "error", text: err instanceof Error ? err.message : "Could not complete task" });
-    } finally { setActingTaskId(null); }
+    // Show quiz modal instead of completing directly
+    const task = tasks.find((t) => t.taskId === taskId);
+    if (task) {
+      setQuizTaskId(taskId);
+      setQuizTaskTitle(task.taskTitle);
+      setShowQuiz(true);
+    }
+  }
+  
+  function handleQuizComplete() {
+    // Refresh plan detail and tasks after quiz completion
+    setShowQuiz(false);
+    setQuizTaskId(null);
+    setQuizTaskTitle("");
+    
+    if (selectedPlanId) {
+      loadPlanDetail(selectedPlanId)
+        .then(({ plan, tasks: t }) => {
+          setPlanDetail(plan);
+          setTasks(t);
+        })
+        .catch((err) => {
+          setMessage({ type: "error", text: err instanceof Error ? err.message : "Failed to refresh" });
+        });
+    }
+  }
+  
+  function handleQuizCancel() {
+    setShowQuiz(false);
+    setQuizTaskId(null);
+    setQuizTaskTitle("");
   }
 
   async function handleUndo(taskId: string) {
@@ -614,17 +657,23 @@ export function StudyPlanner() {
     } finally { setDeletingPlanId(null); }
   }
 
-  const tasksByDate = groupTasksByDate(tasks);
+  const tasksByDate = groupTasksByDate(filteredTasks);
   const sortedDateKeys = Object.keys(tasksByDate).sort();
   const todayKey = dateKey(new Date().toISOString());
   const readySyllabi = syllabi.length > 0;
 
-  // Plan-level stats
+  // Plan-level stats (use filtered or full tasks based on filter)
   const totalTasks = planDetail?.totalTasks ?? 0;
   const completedTasks = planDetail?.completedTasks ?? 0;
   const progress = planDetail?.progress ?? 0;
   const daysLeft = planDetail ? Math.max(0, Math.ceil((new Date(planDetail.examDate).getTime() - Date.now()) / 86400000)) : 0;
   const remainingTasks = totalTasks - completedTasks;
+  
+  // Clear filter helper
+  const clearFilter = () => {
+    window.history.pushState({}, "", "/planner");
+    window.location.reload();
+  };
 
   // Timeline scroll helpers
   function scrollTimeline(dir: "prev" | "next") {
@@ -646,6 +695,62 @@ export function StudyPlanner() {
           {message.type === "success" ? <CheckCircle2 className="size-4 shrink-0" /> : null}
           {message.text}
         </div>
+      )}
+      
+      {/* Filter indicator */}
+      {statusFilter && (
+        <div className="flex items-center justify-between gap-3 rounded-card border border-primary/20 bg-primary/8 px-4 py-3">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium">Showing:</span>
+            <span className="rounded-chip border border-primary/25 bg-primary/15 px-2.5 py-1 text-sm font-semibold text-primary capitalize">
+              {statusFilter === "overdue" || statusFilter === "missed" ? "Overdue" : statusFilter} Tasks
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={clearFilter}
+            className="flex items-center gap-1.5 rounded-lg border border-border/60 bg-card px-3 py-1.5 text-sm font-medium transition-colors hover:border-primary/30 hover:bg-primary/10"
+          >
+            <X className="size-3.5" />
+            Clear filter
+          </button>
+        </div>
+      )}
+
+      {/* Planner Stats Cards - only show when plan is selected */}
+      {planDetail && !showGenerate && (
+        <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <StatCard
+            label="Total tasks"
+            value={String(totalTasks)}
+            hint="All tasks in plan"
+            icon={<Target className="size-5" strokeWidth={2} />}
+          />
+          <StatCard
+            label="Completed"
+            value={String(completedTasks)}
+            hint="Tasks marked done"
+            icon={<CheckCircle2 className="size-5" strokeWidth={2} />}
+            accent="emerald"
+            onClick={() => window.location.href = "/planner?status=completed"}
+          />
+          <StatCard
+            label="Pending"
+            value={String(filteredPending)}
+            hint="Still to complete"
+            icon={<ListTodo className="size-5" strokeWidth={2} />}
+            accent="amber"
+            onClick={() => window.location.href = "/planner?status=pending"}
+          />
+          <StatCard
+            label="Overdue"
+            value={String(filteredOverdue)}
+            hint="Missed deadlines"
+            icon={<RotateCcw className="size-5" strokeWidth={2} />}
+            accent="rose"
+            onClick={() => window.location.href = "/planner?status=overdue"}
+          />
+        </section>
       )}
 
       {/* Top bar */}
@@ -959,6 +1064,16 @@ export function StudyPlanner() {
           </div>
         </div>
       </div>
+      
+      {/* Quiz Modal */}
+      {showQuiz && quizTaskId && (
+        <QuizModal
+          taskId={quizTaskId}
+          taskTitle={quizTaskTitle}
+          onComplete={handleQuizComplete}
+          onCancel={handleQuizCancel}
+        />
+      )}
     </div>
   );
 }

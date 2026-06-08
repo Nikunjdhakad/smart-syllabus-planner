@@ -13,6 +13,7 @@ interface CoachSummary {
   motivation: string;
   revisionAlert: string | null;
   recoveryAlert: string | null;
+  quizInsight: string | null;
 }
 
 export function StudyCoachCard() {
@@ -98,8 +99,14 @@ export function StudyCoachCard() {
       </p>
 
       {/* Alerts */}
-      {(data.revisionAlert || data.recoveryAlert) && (
+      {(data.revisionAlert || data.recoveryAlert || data.quizInsight) && (
         <div className="relative flex flex-wrap gap-2 mb-5">
+          {data.quizInsight && (
+            <span className="flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs text-primary">
+              <Target className="size-3" />
+              {data.quizInsight}
+            </span>
+          )}
           {data.revisionAlert && (
             <span className="flex items-center gap-1.5 rounded-full bg-amber-500/10 px-3 py-1 text-xs text-amber-400">
               <RotateCcw className="size-3" />

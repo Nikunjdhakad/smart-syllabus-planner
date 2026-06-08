@@ -16,6 +16,8 @@ import { AiSuggestionCard } from "@/components/dashboard/ai-suggestion-card";
 import { OverdueAlertBanner } from "@/components/dashboard/overdue-alert-banner";
 import { RevisionOverview } from "@/components/dashboard/revision-overview";
 import { UpcomingTasks } from "@/components/dashboard/upcoming-tasks";
+import { RecentNotificationsWidget } from "@/components/notifications/recent-notifications-widget";
+import { QuizAnalyticsCard } from "@/components/dashboard/quiz-analytics-card";
 import { getSession } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
 import { ROUTES } from "@/lib/constants";
@@ -145,6 +147,7 @@ export default async function DashboardPage() {
             hint="Tasks marked done"
             icon={<CheckCircle2 className="size-5" strokeWidth={2} />}
             accent="emerald"
+            href={ROUTES.planner + "?status=completed"}
           />
           <StatCard
             label="Total tasks"
@@ -158,6 +161,7 @@ export default async function DashboardPage() {
             hint="Still to complete"
             icon={<ListTodo className="size-5" strokeWidth={2} />}
             accent="amber"
+            href={ROUTES.planner + "?status=pending"}
           />
         </section>
 
@@ -168,6 +172,16 @@ export default async function DashboardPage() {
 
         {/* Revisions overview */}
         {revisions && <RevisionOverview buckets={revisions} />}
+        
+        {/* Quiz Analytics */}
+        <section>
+          <QuizAnalyticsCard />
+        </section>
+
+        {/* Recent notifications widget */}
+        <section>
+          <RecentNotificationsWidget />
+        </section>
         
         {/* Study Coach */}
         <StudyCoachCard />
