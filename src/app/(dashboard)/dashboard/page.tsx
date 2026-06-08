@@ -17,6 +17,7 @@ import { OverdueAlertBanner } from "@/components/dashboard/overdue-alert-banner"
 import { RevisionOverview } from "@/components/dashboard/revision-overview";
 import { UpcomingTasks } from "@/components/dashboard/upcoming-tasks";
 import { RecentNotificationsWidget } from "@/components/notifications/recent-notifications-widget";
+import { QuizAnalyticsCard } from "@/components/dashboard/quiz-analytics-card";
 import { getSession } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
 import { ROUTES } from "@/lib/constants";
@@ -171,6 +172,11 @@ export default async function DashboardPage() {
 
         {/* Revisions overview */}
         {revisions && <RevisionOverview buckets={revisions} />}
+        
+        {/* Quiz Analytics */}
+        <section>
+          <QuizAnalyticsCard />
+        </section>
 
         {/* Recent notifications widget */}
         <section>

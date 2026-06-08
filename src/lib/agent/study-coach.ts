@@ -3,6 +3,7 @@ import Task from "@/models/Task";
 import Progress from "@/models/Progress";
 import Revision from "@/models/Revision";
 import RecoveryPlan from "@/models/RecoveryPlan";
+import Quiz from "@/models/Quiz";
 
 export async function getStudyCoachSummary(userId: string) {
   await connectDB();
@@ -33,6 +34,19 @@ export async function getStudyCoachSummary(userId: string) {
     .sort({ createdAt: -1 })
     .lean();
 
+  // Get quiz analytics
+  const quizzes = await Quiz.find({
+    userId,
+    status: { $in: ["mastered", "completed", "revision_required", "restudy_required"] },
+  }).lean();
+
+  const quizAnalytics = {
+    totalQuizzes: quizzes.length,
+    averageScore: quizzes.length > 0 ? Math.round(quizzes.reduce((sum, q) => sum + q.percentage, 0) / quizzes.length) : 0,
+    weakTopics: quizzes.filter((q) => q.percentage < 70).map((q) => q.topicName).slice(0, 3),
+    strongTopics: quizzes.filter((q) => q.percentage >= 95).map((q) => q.topicName).slice(0, 3),
+  };
+
   // Compute readiness score from actual data
   const allTasks = await Task.find({ userId }).lean();
   const totalTasks     = allTasks.length;
@@ -46,7 +60,7 @@ export async function getStudyCoachSummary(userId: string) {
     Math.min(100, Math.round(completionPct * 0.6 + Math.min(streak * 2, 20) - Math.min(missed * 3, 20))),
   );
 
-  // Derive recommendations
+  // Derive recommendations with quiz insights
   let priority       = "Review your study plan";
   let risk           = "All tasks on track";
   let recommendation = "Keep up the good work!";
@@ -57,7 +71,13 @@ export async function getStudyCoachSummary(userId: string) {
     recommendation = "Complete your overdue tasks first";
   }
 
-  if (readinessScore >= 80) {
+  if (quizAnalytics.weakTopics.length > 0) {
+    recommendation = `Focus on improving: ${quizAnalytics.weakTopics.join(", ")}`;
+  }
+
+  if (quizAnalytics.strongTopics.length > 0 && quizAnalytics.averageScore >= 85) {
+    motivation = `Excellent work! You've mastered ${quizAnalytics.strongTopics[0]} and others. Keep it up!`;
+  } else if (readinessScore >= 80) {
     motivation = "You are ahead of schedule. Keep it up!";
   } else if (readinessScore >= 60) {
     motivation = "Good progress! A little more effort will get you there.";
@@ -75,5 +95,9 @@ export async function getStudyCoachSummary(userId: string) {
       ? `${todayRevisions.length} revision${todayRevisions.length > 1 ? "s" : ""} due today`
       : null,
     recoveryAlert: recoveryPlan ? "Recovery plan available" : null,
+    quizInsight: quizAnalytics.totalQuizzes > 0
+      ? `Knowledge accuracy: ${quizAnalytics.averageScore}% (${quizAnalytics.totalQuizzes} quiz${quizAnalytics.totalQuizzes > 1 ? "zes" : ""})`
+      : null,
   };
 }
+

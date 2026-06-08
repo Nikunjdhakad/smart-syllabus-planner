@@ -28,6 +28,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { TaskCompleteBurst } from "@/components/motion/task-complete-burst";
 import { StatCard } from "@/components/shared/stat-card";
+import { QuizModal } from "@/components/quiz/quiz-modal";
 import { cn } from "@/lib/utils";
 import type { PlannerTask, StudyPlanDetail, StudyPlanListItem } from "@/types/study-plan";
 import type { SubjectItem, SyllabusItem } from "@/types/syllabus";
@@ -458,6 +459,11 @@ export function StudyPlanner() {
   const [justCompletedId, setJustCompletedId] = useState<string | null>(null);
   const [showGenerate, setShowGenerate] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  
+  // Quiz state
+  const [showQuiz, setShowQuiz] = useState(false);
+  const [quizTaskId, setQuizTaskId] = useState<string | null>(null);
+  const [quizTaskTitle, setQuizTaskTitle] = useState<string>("");
 
   // Form state
   const [title, setTitle] = useState("");
@@ -554,22 +560,37 @@ export function StudyPlanner() {
   }
 
   async function handleComplete(taskId: string) {
-    setActingTaskId(taskId); setMessage(null);
-    try {
-      const r = await fetch(`/api/tasks/${taskId}/complete`, { method: "POST" });
-      if (!r.ok) throw new Error(await readApiError(r));
-      const updated = (await r.json()).data.task as PlannerTask;
-      const was = tasks.find((t) => t.taskId === taskId)?.status === "completed";
-      setTasks((p) => p.map((t) => t.taskId === taskId ? { ...t, ...updated } : t));
-      if (!was && updated.status === "completed" && selectedPlanId) {
-        updatePlanCounts(selectedPlanId, 1);
-        // Trigger burst animation
-        setJustCompletedId(taskId);
-        setTimeout(() => setJustCompletedId(null), 700);
-      }
-    } catch (err) {
-      setMessage({ type: "error", text: err instanceof Error ? err.message : "Could not complete task" });
-    } finally { setActingTaskId(null); }
+    // Show quiz modal instead of completing directly
+    const task = tasks.find((t) => t.taskId === taskId);
+    if (task) {
+      setQuizTaskId(taskId);
+      setQuizTaskTitle(task.taskTitle);
+      setShowQuiz(true);
+    }
+  }
+  
+  function handleQuizComplete() {
+    // Refresh plan detail and tasks after quiz completion
+    setShowQuiz(false);
+    setQuizTaskId(null);
+    setQuizTaskTitle("");
+    
+    if (selectedPlanId) {
+      loadPlanDetail(selectedPlanId)
+        .then(({ plan, tasks: t }) => {
+          setPlanDetail(plan);
+          setTasks(t);
+        })
+        .catch((err) => {
+          setMessage({ type: "error", text: err instanceof Error ? err.message : "Failed to refresh" });
+        });
+    }
+  }
+  
+  function handleQuizCancel() {
+    setShowQuiz(false);
+    setQuizTaskId(null);
+    setQuizTaskTitle("");
   }
 
   async function handleUndo(taskId: string) {
@@ -1030,6 +1051,16 @@ export function StudyPlanner() {
           </div>
         </div>
       </div>
+      
+      {/* Quiz Modal */}
+      {showQuiz && quizTaskId && (
+        <QuizModal
+          taskId={quizTaskId}
+          taskTitle={quizTaskTitle}
+          onComplete={handleQuizComplete}
+          onCancel={handleQuizCancel}
+        />
+      )}
     </div>
   );
 }
