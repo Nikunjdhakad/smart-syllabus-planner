@@ -3,6 +3,9 @@
 /**
  * Global copilot state — persists chat history and open/close state
  * across page navigations without a library dependency.
+ *
+ * Scroll position of the previous page is captured on open and
+ * restored on close so the user lands exactly where they left off.
  */
 import {
   createContext,
@@ -41,12 +44,38 @@ export function CopilotProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Persist scroll position of the page behind the copilot
+  const savedScrollY = useRef(0);
+
   // Keep a stable ref to messages for the sendMessage closure
   const messagesRef = useRef(messages);
   messagesRef.current = messages;
 
-  const setOpen = useCallback((v: boolean) => setOpenState(v), []);
-  const toggle = useCallback(() => setOpenState((p) => !p), []);
+  const setOpen = useCallback((v: boolean) => {
+    if (v) {
+      // Capture current scroll before opening
+      savedScrollY.current = window.scrollY;
+    } else {
+      // Restore scroll after closing (next frame so layout settles)
+      const y = savedScrollY.current;
+      requestAnimationFrame(() => window.scrollTo({ top: y, behavior: "instant" }));
+    }
+    setOpenState(v);
+  }, []);
+
+  const toggle = useCallback(() => {
+    setOpenState((prev) => {
+      if (!prev) {
+        // opening
+        savedScrollY.current = window.scrollY;
+      } else {
+        // closing
+        const y = savedScrollY.current;
+        requestAnimationFrame(() => window.scrollTo({ top: y, behavior: "instant" }));
+      }
+      return !prev;
+    });
+  }, []);
 
   const sendMessage = useCallback(async (text: string) => {
     const trimmed = text.trim();

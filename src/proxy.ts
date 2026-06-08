@@ -10,7 +10,6 @@ const protectedPaths = [
   ROUTES.planner,
   ROUTES.progress,
   ROUTES.revisions,
-  ROUTES.assistant,
   ROUTES.recovery,
 ];
 
@@ -48,7 +47,6 @@ export const config = {
     "/planner/:path*",
     "/progress/:path*",
     "/revisions/:path*",
-    "/assistant/:path*",
     "/recovery/:path*",
     "/login",
     "/register",
