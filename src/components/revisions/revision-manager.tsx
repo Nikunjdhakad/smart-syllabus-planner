@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { AlertCircle, CalendarClock, Check, CheckCircle2, Loader2, RotateCcw, Sparkles, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -80,11 +81,19 @@ function RevisionListBlock({ title, items, actingId, onComplete, onSkip, empty }
 }
 
 export function RevisionManager() {
+  const searchParams = useSearchParams();
+  const statusFilter = searchParams.get("status");
+  
   const [buckets, setBuckets] = useState<RevisionListResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [actingId, setActingId] = useState<string | null>(null);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  
+  const clearFilter = () => {
+    window.history.pushState({}, "", "/revisions");
+    window.location.reload();
+  };
 
   const load = useCallback(async () => {
     const r = await fetch("/api/revisions");
@@ -159,9 +168,39 @@ export function RevisionManager() {
   }
 
   const data = buckets ?? { upcoming: [], missed: [], completed: [], total: 0 };
+  
+  // Apply filter
+  const filteredData = statusFilter
+    ? {
+        upcoming: statusFilter === "upcoming" ? data.upcoming : [],
+        missed: statusFilter === "missed" ? data.missed : [],
+        completed: statusFilter === "completed" ? data.completed : [],
+        total: data.total,
+      }
+    : data;
 
   return (
     <div className="page-enter space-y-6">
+      {/* Filter indicator */}
+      {statusFilter && (
+        <div className="flex items-center justify-between gap-3 rounded-card border border-primary/20 bg-primary/8 px-4 py-3">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium">Showing:</span>
+            <span className="rounded-chip border border-primary/25 bg-primary/15 px-2.5 py-1 text-sm font-semibold text-primary capitalize">
+              {statusFilter} Revisions
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={clearFilter}
+            className="flex items-center gap-1.5 rounded-lg border border-border/60 bg-card px-3 py-1.5 text-sm font-medium transition-colors hover:border-primary/30 hover:bg-primary/10"
+          >
+            <X className="size-3.5" />
+            Clear filter
+          </button>
+        </div>
+      )}
+      
       {/* Header banner */}
       <div className="relative overflow-hidden rounded-2xl border border-primary/15 bg-gradient-to-r from-primary/8 via-card to-card p-5">
         <div className="pointer-events-none absolute -right-8 -top-8 size-32 rounded-full bg-primary/8 blur-2xl" aria-hidden />
@@ -191,24 +230,28 @@ export function RevisionManager() {
       {/* Stats bar */}
       <div className="grid grid-cols-3 gap-3">
         {[
-          { label: "Upcoming", count: data.upcoming.length, icon: CalendarClock, color: "text-primary" },
-          { label: "Missed", count: data.missed.length, icon: AlertCircle, color: "text-destructive" },
-          { label: "Completed", count: data.completed.length, icon: CheckCircle2, color: "text-emerald-400" },
-        ].map(({ label, count, icon: Icon, color }) => (
-          <div key={label} className="rounded-2xl border border-border/60 bg-card p-4 text-center">
-            <Icon className={cn("mx-auto mb-1.5 size-5", color)} />
+          { label: "Upcoming", count: data.upcoming.length, icon: CalendarClock, color: "text-primary", href: "/revisions?status=upcoming" },
+          { label: "Missed", count: data.missed.length, icon: AlertCircle, color: "text-destructive", href: "/revisions?status=missed" },
+          { label: "Completed", count: data.completed.length, icon: CheckCircle2, color: "text-emerald-400", href: "/revisions?status=completed" },
+        ].map(({ label, count, icon: Icon, color, href }) => (
+          <a
+            key={label}
+            href={href}
+            className="group rounded-2xl border border-border/60 bg-card p-4 text-center transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md hover:border-primary/30 cursor-pointer"
+          >
+            <Icon className={cn("mx-auto mb-1.5 size-5 transition-transform duration-300 group-hover:scale-110", color)} />
             <p className="text-2xl font-bold tabular-nums">{count}</p>
             <p className="text-xs text-muted-foreground">{label}</p>
-          </div>
+          </a>
         ))}
       </div>
 
       {/* Columns */}
       <div className="grid gap-4 lg:grid-cols-3">
         {[
-          { icon: CalendarClock, iconClass: "text-primary", title: `Upcoming (${data.upcoming.length})`, items: data.upcoming, empty: "No upcoming revisions" },
-          { icon: AlertCircle, iconClass: "text-destructive", title: `Missed (${data.missed.length})`, items: data.missed, empty: "No missed revisions" },
-          { icon: CheckCircle2, iconClass: "text-emerald-400", title: `Completed (${data.completed.length})`, items: data.completed, empty: "None completed yet" },
+          { icon: CalendarClock, iconClass: "text-primary", title: `Upcoming (${filteredData.upcoming.length})`, items: filteredData.upcoming, empty: "No upcoming revisions" },
+          { icon: AlertCircle, iconClass: "text-destructive", title: `Missed (${filteredData.missed.length})`, items: filteredData.missed, empty: "No missed revisions" },
+          { icon: CheckCircle2, iconClass: "text-emerald-400", title: `Completed (${filteredData.completed.length})`, items: filteredData.completed, empty: "None completed yet" },
         ].map(({ icon: Icon, iconClass, title, items, empty }) => (
           <div key={title} className="overflow-hidden rounded-2xl border border-border/60 bg-card">
             <div className="flex items-center gap-2 border-b border-border/60 px-4 py-3.5">

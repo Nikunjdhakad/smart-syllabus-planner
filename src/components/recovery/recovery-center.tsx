@@ -1,9 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { CheckCircle2, Loader2, RefreshCw, Sparkles, ArrowRight } from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import { CheckCircle2, Loader2, RefreshCw, Sparkles, ArrowRight, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { StatCard } from "@/components/shared/stat-card";
 import { MissedTasksList } from "@/components/recovery/missed-tasks-list";
 import { RecommendationsPanel } from "@/components/recovery/recommendations-panel";
 import { RecoveryKpiCards } from "@/components/recovery/recovery-kpi-cards";
@@ -33,6 +35,9 @@ function EmptyState() {
 }
 
 export function RecoveryCenter({ initial }: { initial: RecoveryDashboardData }) {
+  const searchParams = useSearchParams();
+  const viewFilter = searchParams.get("view");
+  
   const [data, setData] = useState(initial);
   const [recovery, setRecovery] = useState<RecoverySummary | null>(initial.latestRecovery);
   const [selectedPlanId, setSelectedPlanId] = useState(initial.plansWithOverdue[0]?.planId ?? "");
@@ -40,6 +45,11 @@ export function RecoveryCenter({ initial }: { initial: RecoveryDashboardData }) 
   const [applying, setApplying] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const hasOverdue = data.overdueCount > 0;
+  
+  const clearFilter = () => {
+    window.history.pushState({}, "", "/recovery");
+    window.location.reload();
+  };
 
   async function generate(apply: boolean) {
     if (!selectedPlanId) { setMessage({ type: "error", text: "No study plan with overdue tasks found." }); return; }
@@ -64,6 +74,56 @@ export function RecoveryCenter({ initial }: { initial: RecoveryDashboardData }) 
 
   return (
     <div className="space-y-6">
+      {/* Filter indicator */}
+      {viewFilter && (
+        <div className="flex items-center justify-between gap-3 rounded-card border border-primary/20 bg-primary/8 px-4 py-3">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium">Showing:</span>
+            <span className="rounded-chip border border-primary/25 bg-primary/15 px-2.5 py-1 text-sm font-semibold text-primary capitalize">
+              {viewFilter === "missed" ? "Missed Tasks" : viewFilter === "plans" ? "Recovery Plans" : "Recovered Tasks"}
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={clearFilter}
+            className="flex items-center gap-1.5 rounded-lg border border-border/60 bg-card px-3 py-1.5 text-sm font-medium transition-colors hover:border-primary/30 hover:bg-primary/10"
+          >
+            <X className="size-3.5" />
+            Clear filter
+          </button>
+        </div>
+      )}
+      
+      {/* Recovery Stats Cards */}
+      {hasOverdue && (
+        <section className="grid gap-3 sm:grid-cols-3">
+          <StatCard
+            label="Missed tasks"
+            value={String(data.overdueCount)}
+            hint="Tasks past due date"
+            icon={<RefreshCw className="size-5" strokeWidth={2} />}
+            accent="rose"
+            onClick={() => window.location.href = "/recovery?view=missed"}
+          />
+          <StatCard
+            label="Recovery plans"
+            value={recovery ? "1" : "0"}
+            hint={recovery ? "Active recovery plan" : "No plan generated"}
+            icon={<Sparkles className="size-5" strokeWidth={2} />}
+            accent="primary"
+            onClick={() => window.location.href = "/recovery?view=plans"}
+          />
+          <StatCard
+            label="Recovered tasks"
+            value={recovery?.movedTasks?.length.toString() ?? "0"}
+            hint="Tasks rescheduled"
+            icon={<CheckCircle2 className="size-5" strokeWidth={2} />}
+            accent="emerald"
+            onClick={() => window.location.href = "/recovery?view=recovered"}
+          />
+        </section>
+      )}
+      
       {/* Generate panel */}
       {hasOverdue && (
         <div className="overflow-hidden rounded-2xl border border-border/60 bg-card">
@@ -116,11 +176,13 @@ export function RecoveryCenter({ initial }: { initial: RecoveryDashboardData }) 
       {/* Empty state */}
       {!hasOverdue && !recovery && <EmptyState />}
 
-      {/* Missed tasks */}
-      {data.overdueTasks.length > 0 && <MissedTasksList tasks={data.overdueTasks} />}
+      {/* Missed tasks - show only if view=missed or no filter */}
+      {data.overdueTasks.length > 0 && (!viewFilter || viewFilter === "missed") && (
+        <MissedTasksList tasks={data.overdueTasks} />
+      )}
 
-      {/* Recovery details */}
-      {recovery && (
+      {/* Recovery details - show only if view=plans/recovered or no filter */}
+      {recovery && (!viewFilter || viewFilter === "plans" || viewFilter === "recovered") && (
         <div className="space-y-6">
           {/* Header */}
           <div className="flex flex-wrap items-center justify-between gap-2">
@@ -139,8 +201,14 @@ export function RecoveryCenter({ initial }: { initial: RecoveryDashboardData }) 
           </div>
 
           <RecoveryKpiCards recovery={recovery} />
-          <RecommendationsPanel recommendations={recovery.recommendations} />
-          <RecoveryTimeline movedTasks={recovery.movedTasks} schedulePreview={recovery.schedulePreview} />
+          
+          {(!viewFilter || viewFilter === "plans") && (
+            <RecommendationsPanel recommendations={recovery.recommendations} />
+          )}
+          
+          {(!viewFilter || viewFilter === "recovered") && (
+            <RecoveryTimeline movedTasks={recovery.movedTasks} schedulePreview={recovery.schedulePreview} />
+          )}
 
           {/* Apply CTA */}
           {recovery.status === "generated" && hasOverdue && (

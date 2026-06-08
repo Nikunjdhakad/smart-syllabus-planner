@@ -53,6 +53,8 @@ export function StatCard({
   icon,
   className,
   accent = "primary",
+  href,
+  onClick,
 }: {
   label: string;
   value: string;
@@ -60,19 +62,14 @@ export function StatCard({
   icon: IconProp;
   className?: string;
   accent?: Accent;
+  href?: string;
+  onClick?: () => void;
 }) {
   const cfg = accentConfig[accent];
+  const isClickable = !!(href || onClick);
 
-  return (
-    <div
-      className={cn(
-        "group relative overflow-hidden rounded-[24px] border bg-card p-5",
-        "shadow-sm transition-all duration-300",
-        "hover:-translate-y-0.5 hover:shadow-md",
-        cfg.border,
-        className,
-      )}
-    >
+  const content = (
+    <>
       <div className={cn("pointer-events-none absolute inset-0 bg-gradient-to-br", cfg.bg)} aria-hidden />
       <div className="relative flex items-start justify-between gap-3">
         <div className="min-w-0 space-y-1.5">
@@ -97,6 +94,57 @@ export function StatCard({
           {renderIcon(icon, "size-5")}
         </div>
       </div>
+    </>
+  );
+
+  if (href) {
+    return (
+      <a
+        href={href}
+        className={cn(
+          "group relative overflow-hidden rounded-[24px] border bg-card p-5",
+          "shadow-sm transition-all duration-300",
+          "hover:-translate-y-0.5 hover:shadow-md cursor-pointer",
+          cfg.border,
+          className,
+        )}
+        aria-label={`${label}: ${value}. Click to view details.`}
+      >
+        {content}
+      </a>
+    );
+  }
+
+  if (onClick) {
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        className={cn(
+          "group relative overflow-hidden rounded-[24px] border bg-card p-5",
+          "shadow-sm transition-all duration-300",
+          "hover:-translate-y-0.5 hover:shadow-md cursor-pointer text-left w-full",
+          cfg.border,
+          className,
+        )}
+        aria-label={`${label}: ${value}. Click to view details.`}
+      >
+        {content}
+      </button>
+    );
+  }
+
+  return (
+    <div
+      className={cn(
+        "group relative overflow-hidden rounded-[24px] border bg-card p-5",
+        "shadow-sm transition-all duration-300",
+        "hover:-translate-y-0.5 hover:shadow-md",
+        cfg.border,
+        className,
+      )}
+    >
+      {content}
     </div>
   );
 }

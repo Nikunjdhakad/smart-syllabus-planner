@@ -146,6 +146,7 @@ export default async function DashboardPage() {
             hint="Tasks marked done"
             icon={<CheckCircle2 className="size-5" strokeWidth={2} />}
             accent="emerald"
+            href={ROUTES.planner + "?status=completed"}
           />
           <StatCard
             label="Total tasks"
@@ -159,6 +160,7 @@ export default async function DashboardPage() {
             hint="Still to complete"
             icon={<ListTodo className="size-5" strokeWidth={2} />}
             accent="amber"
+            href={ROUTES.planner + "?status=pending"}
           />
         </section>
 
