@@ -1,6 +1,7 @@
 "use client";
 
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip, Legend } from "recharts";
+import { ChartTooltip } from "@/components/progress/chart-tooltip";
 
 /* These colors work in both light and dark — vibrant enough for light bg */
 const STATUS_COLORS: Record<string, string> = {
@@ -40,10 +41,7 @@ export function CompletionDonut({ labels, data }: Props) {
                 <Cell key={entry.key} fill={STATUS_COLORS[entry.key] ?? STATUS_COLORS[entry.name] ?? "#7C3AED"} />
               ))}
             </Pie>
-            <Tooltip
-              formatter={(v: number) => [v, "tasks"]}
-              contentStyle={{ borderRadius: "12px", border: "1px solid var(--border)", background: "var(--card)", color: "var(--foreground)", fontSize: "12px", boxShadow: "0 4px 16px rgba(0,0,0,0.08)" }}
-            />
+            <Tooltip content={<ChartTooltip unit="tasks" />} />
             <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: "12px", color: "var(--foreground)" }} />
           </PieChart>
         </ResponsiveContainer>

@@ -2,6 +2,7 @@
 
 import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import type { SubjectProgressSlice } from "@/types/progress";
+import { ChartTooltip } from "@/components/progress/chart-tooltip";
 
 type Props = { bySubject: SubjectProgressSlice[] };
 
@@ -27,8 +28,7 @@ export function SubjectProgressChart({ bySubject }: Props) {
             <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} />
             <Tooltip
               cursor={{ fill: "var(--muted)" }}
-              contentStyle={{ borderRadius: "12px", border: "1px solid var(--border)", background: "var(--card)", color: "var(--foreground)", fontSize: "12px", boxShadow: "0 4px 16px rgba(0,0,0,0.08)" }}
-              labelFormatter={(_, p) => p?.[0]?.payload?.fullName ?? ""}
+              content={<ChartTooltip labelPayloadKey="fullName" />}
             />
             <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: "12px", color: "var(--foreground)" }} />
             <Bar dataKey="Completed" fill="#7C3AED" radius={[4, 4, 0, 0]} />
