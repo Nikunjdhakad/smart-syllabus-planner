@@ -198,11 +198,24 @@ function TaskRow({
         </div>
       </div>
 
-      {done && (
-        <span className="shrink-0 mt-0.5">
-          <DoneRing />
-        </span>
-      )}
+      {done ? (
+  <span className="shrink-0 mt-0.5 flex items-center gap-2">
+    <span className="inline-flex items-center rounded-chip border border-emerald-500/25 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-medium text-emerald-500">
+      Mastered
+    </span>
+    <DoneRing />
+  </span>
+) : !missed && (
+  <button
+    type="button"
+    onClick={onComplete}
+    disabled={busy}
+    className="shrink-0 inline-flex items-center gap-1 rounded-chip border border-primary/30 bg-primary/10 px-2.5 py-1 text-[10px] font-medium text-primary transition-all hover:bg-primary/20 disabled:opacity-50"
+  >
+    {busy ? <Loader2 className="size-2.5 animate-spin" /> : <Check className="size-2.5" />}
+    Mark Complete
+  </button>
+)}
     </li>
   );
 }
