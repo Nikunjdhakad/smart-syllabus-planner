@@ -10,9 +10,11 @@ import {
   Loader2,
   Lock,
   Mail,
+  Shield,
   Sparkles,
   User,
   X,
+  Zap,
 } from "lucide-react";
 
 import { ROUTES } from "@/lib/constants";
@@ -46,7 +48,7 @@ function PasswordStrengthIndicator({ password }: { password: string }) {
   const config = STRENGTH_CONFIG[strength];
 
   return (
-    <div className="mt-2 space-y-2">
+    <div className="mt-2.5 space-y-2">
       {/* Strength bar */}
       <div className="flex items-center gap-2">
         <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
@@ -139,6 +141,43 @@ function validatePassword(password: string): string | undefined {
   return undefined;
 }
 
+// ─── Google icon SVG ────────────────────────────────────────────
+
+function GoogleIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none">
+      <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/>
+      <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+      <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18A10.96 10.96 0 0 0 1 12c0 1.77.42 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
+      <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+    </svg>
+  );
+}
+
+// ─── Trust badges ───────────────────────────────────────────────
+
+function TrustBadges() {
+  const badges = [
+    { icon: Lock,   label: "Secure Authentication" },
+    { icon: Shield, label: "Private Academic Data" },
+    { icon: Zap,    label: "Powered by AI" },
+  ];
+
+  return (
+    <div className="mt-8 flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
+      {badges.map(({ icon: Icon, label }) => (
+        <div
+          key={label}
+          className="flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground/70"
+        >
+          <Icon className="size-3" />
+          <span>{label}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 // ─── Main form ──────────────────────────────────────────────────
 
 export function AuthForm({ mode }: { mode: AuthMode }) {
@@ -223,42 +262,62 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
   }
 
   return (
-    <div className="w-full max-w-sm">
-      {/* Header */}
-      <div className="mb-8 text-center">
-        <div className="mx-auto mb-4 flex size-12 items-center justify-center rounded-card-sm bg-primary/15">
-          <Sparkles className="size-6 text-primary" />
+    <div className="w-full max-w-[480px] auth-stagger">
+      {/* ── Hero identity section ── */}
+      <div className="mb-6 text-center sm:mb-8">
+        {/* Badge */}
+        <div className="mx-auto mb-4 inline-flex items-center gap-1.5 rounded-full border border-primary/15 bg-primary/5 px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-primary dark:border-primary/20 dark:bg-primary/10">
+          <Sparkles className="size-3" />
+          AI-Powered Academic Success Platform
         </div>
-        <h1 className="text-heading-2 font-bold">
-          {isLogin ? "Welcome back" : "Create your account"}
+
+        {/* Heading */}
+        <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+          {isLogin ? "Welcome Back" : "Create Your Academic Command Center"}
         </h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          {isLogin
-            ? "Sign in to pick up your study plan where you left off."
-            : "Start planning smarter — it only takes a minute."}
+
+        {/* Subtext */}
+        <p className="mt-2.5 text-sm leading-relaxed text-muted-foreground">
+          Plan smarter. Track progress. Stay exam ready.
         </p>
       </div>
 
-      {/* Form card */}
-      <div className="rounded-card border border-border/60 bg-card/80 p-6 shadow-xl shadow-black/20 backdrop-blur-sm">
+      {/* ── Auth card ── */}
+      <div className="auth-card-reveal auth-card-glass rounded-2xl p-6 sm:p-8">
+        {/* Card header */}
+        <div className="mb-5 sm:mb-6">
+          <h2 className="text-base font-semibold text-foreground">
+            {isLogin ? "Sign in to your account" : "Get started for free"}
+          </h2>
+          <p className="mt-1 text-[13px] text-muted-foreground">
+            {isLogin
+              ? "Pick up your study plan where you left off."
+              : "Start planning smarter — it only takes a minute."}
+          </p>
+        </div>
+
+        {/* Form */}
         <form onSubmit={onSubmit} className="space-y-4" noValidate>
           {!isLogin && (
             <div className="space-y-1.5">
-              <Label htmlFor="name" className="text-sm font-medium">
+              <Label htmlFor="name" className="text-[13px] font-medium">
                 Full name
               </Label>
               <div className="relative">
-                <User className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                <User className="absolute left-3.5 top-1/2 size-[18px] -translate-y-1/2 text-muted-foreground/60" />
                 <Input
                   id="name"
                   name="name"
                   placeholder="Alex Johnson"
                   autoComplete="name"
                   className={cn(
-                    "h-11 pl-10",
+                    "h-12 rounded-xl border-border/60 bg-background/50 pl-11 pr-4 text-sm shadow-sm transition-all duration-200",
+                    "placeholder:text-muted-foreground/40",
+                    "focus-visible:border-primary/40 focus-visible:ring-2 focus-visible:ring-primary/15 focus-visible:shadow-[0_0_0_4px_rgba(124,58,237,0.06)]",
+                    "dark:border-white/10 dark:bg-white/5 dark:focus-visible:border-primary/50 dark:focus-visible:ring-primary/20",
                     touched.name &&
                       errors.name &&
-                      "border-destructive focus-visible:ring-destructive",
+                      "border-destructive focus-visible:ring-destructive/20",
                   )}
                   value={name}
                   onChange={(e) => setName(e.target.value)}
@@ -270,11 +329,11 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
           )}
 
           <div className="space-y-1.5">
-            <Label htmlFor="email" className="text-sm font-medium">
+            <Label htmlFor="email" className="text-[13px] font-medium">
               Email
             </Label>
             <div className="relative">
-              <Mail className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+              <Mail className="absolute left-3.5 top-1/2 size-[18px] -translate-y-1/2 text-muted-foreground/60" />
               <Input
                 id="email"
                 name="email"
@@ -282,10 +341,13 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
                 placeholder="you@university.edu"
                 autoComplete="email"
                 className={cn(
-                  "h-11 pl-10",
+                  "h-12 rounded-xl border-border/60 bg-background/50 pl-11 pr-4 text-sm shadow-sm transition-all duration-200",
+                  "placeholder:text-muted-foreground/40",
+                  "focus-visible:border-primary/40 focus-visible:ring-2 focus-visible:ring-primary/15 focus-visible:shadow-[0_0_0_4px_rgba(124,58,237,0.06)]",
+                  "dark:border-white/10 dark:bg-white/5 dark:focus-visible:border-primary/50 dark:focus-visible:ring-primary/20",
                   touched.email &&
                     errors.email &&
-                    "border-destructive focus-visible:ring-destructive",
+                    "border-destructive focus-visible:ring-destructive/20",
                 )}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -297,13 +359,13 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
 
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <Label htmlFor="password" className="text-sm font-medium">
+              <Label htmlFor="password" className="text-[13px] font-medium">
                 Password
               </Label>
               {isLogin && (
                 <Link
                   href="/forgot-password"
-                  className="text-xs text-primary underline-offset-4 hover:underline"
+                  className="text-xs font-medium text-primary/80 underline-offset-4 transition-colors hover:text-primary hover:underline"
                   tabIndex={-1}
                 >
                   Forgot password?
@@ -311,7 +373,7 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
               )}
             </div>
             <div className="relative">
-              <Lock className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+              <Lock className="absolute left-3.5 top-1/2 size-[18px] -translate-y-1/2 text-muted-foreground/60" />
               <Input
                 id="password"
                 name="password"
@@ -323,10 +385,13 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
                 }
                 autoComplete={isLogin ? "current-password" : "new-password"}
                 className={cn(
-                  "h-11 pl-10",
+                  "h-12 rounded-xl border-border/60 bg-background/50 pl-11 pr-4 text-sm shadow-sm transition-all duration-200",
+                  "placeholder:text-muted-foreground/40",
+                  "focus-visible:border-primary/40 focus-visible:ring-2 focus-visible:ring-primary/15 focus-visible:shadow-[0_0_0_4px_rgba(124,58,237,0.06)]",
+                  "dark:border-white/10 dark:bg-white/5 dark:focus-visible:border-primary/50 dark:focus-visible:ring-primary/20",
                   touched.password &&
                     errors.password &&
-                    "border-destructive focus-visible:ring-destructive",
+                    "border-destructive focus-visible:ring-destructive/20",
                 )}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -348,9 +413,18 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
             </div>
           )}
 
+          {/* Primary CTA */}
           <Button
             type="submit"
-            className="mt-2 h-11 w-full gap-2 text-sm font-semibold"
+            className={cn(
+              "relative mt-3 h-[52px] w-full gap-2 rounded-xl text-sm font-semibold",
+              "bg-gradient-to-br from-primary to-[#6D28D9] text-primary-foreground",
+              "shadow-[0_2px_8px_rgba(124,58,237,0.3)] dark:shadow-[0_2px_12px_rgba(124,58,237,0.25)]",
+              "transition-all duration-200",
+              "hover:shadow-[0_4px_16px_rgba(124,58,237,0.4)] hover:-translate-y-0.5",
+              "active:translate-y-0 active:shadow-[0_1px_4px_rgba(124,58,237,0.3)]",
+              "disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-[0_2px_8px_rgba(124,58,237,0.3)]",
+            )}
             disabled={loading || !isFormValid}
           >
             {loading ? (
@@ -365,19 +439,46 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
             )}
           </Button>
         </form>
+
+        {/* ── Divider ── */}
+        <div className="my-5 flex items-center gap-3 sm:my-6">
+          <div className="h-px flex-1 bg-border/50" />
+          <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground/50">
+            or
+          </span>
+          <div className="h-px flex-1 bg-border/50" />
+        </div>
+
+        {/* ── Social login placeholder ── */}
+        <button
+          type="button"
+          disabled
+          className={cn(
+            "flex h-12 w-full items-center justify-center gap-2.5 rounded-xl border text-sm font-medium transition-all duration-200",
+            "border-border/60 bg-background/30 text-foreground/80",
+            "hover:bg-background/60 hover:border-border",
+            "dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/8",
+            "disabled:opacity-60 disabled:cursor-not-allowed",
+          )}
+        >
+          <GoogleIcon className="size-[18px]" />
+          Continue with Google
+        </button>
       </div>
 
+      {/* ── Secondary link ── */}
       <p className="mt-6 text-center text-sm text-muted-foreground">
         {isLogin ? "Don't have an account?" : "Already have an account?"}{" "}
         <Link
           href={isLogin ? ROUTES.register : ROUTES.login}
-          className={cn(
-            "font-medium text-primary underline-offset-4 hover:underline",
-          )}
+          className="font-semibold text-primary underline-offset-4 transition-colors hover:text-primary/80 hover:underline"
         >
           {isLogin ? "Sign up free" : "Sign in"}
         </Link>
       </p>
+
+      {/* ── Trust badges ── */}
+      <TrustBadges />
     </div>
   );
 }

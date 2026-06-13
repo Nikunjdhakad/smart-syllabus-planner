@@ -516,4 +516,101 @@
     );
     animation: hero-border-rotate 4s linear infinite;
   }
+
+  /* ═══════════════════════════════════════════════════════════════
+     AUTH PAGES — Premium centered auth experience
+     ═══════════════════════════════════════════════════════════════ */
+
+  /* ── Particle float (slow vertical drift) ── */
+  @keyframes auth-particle-float {
+    0%, 100% {
+      transform: translate(var(--px, 0px), var(--py, 0px)) scale(var(--ps, 1));
+      opacity: var(--po, 0.3);
+    }
+    25% {
+      transform: translate(calc(var(--px, 0px) + 8px), calc(var(--py, 0px) - 20px)) scale(calc(var(--ps, 1) * 1.15));
+      opacity: calc(var(--po, 0.3) * 1.6);
+    }
+    50% {
+      transform: translate(calc(var(--px, 0px) - 6px), calc(var(--py, 0px) - 35px)) scale(var(--ps, 1));
+      opacity: var(--po, 0.3);
+    }
+    75% {
+      transform: translate(calc(var(--px, 0px) + 4px), calc(var(--py, 0px) - 15px)) scale(calc(var(--ps, 1) * 0.9));
+      opacity: calc(var(--po, 0.3) * 1.3);
+    }
+  }
+
+  /* ── Ambient glow drift ── */
+  @keyframes auth-glow-drift-1 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    33%      { transform: translate(40px, -30px) scale(1.1); }
+    66%      { transform: translate(-20px, 20px) scale(0.95); }
+  }
+  @keyframes auth-glow-drift-2 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    33%      { transform: translate(-35px, 25px) scale(0.9); }
+    66%      { transform: translate(25px, -15px) scale(1.08); }
+  }
+
+  /* ── Card reveal ── */
+  @keyframes auth-card-reveal {
+    from {
+      opacity: 0;
+      transform: translateY(16px) scale(0.97);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+  .auth-card-reveal {
+    animation: auth-card-reveal 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  /* ── Hero text stagger ── */
+  .auth-stagger > * {
+    animation: fade-in-up 0.5s ease-out both;
+  }
+  .auth-stagger > *:nth-child(1) { animation-delay: 0ms; }
+  .auth-stagger > *:nth-child(2) { animation-delay: 80ms; }
+  .auth-stagger > *:nth-child(3) { animation-delay: 160ms; }
+  .auth-stagger > *:nth-child(4) { animation-delay: 240ms; }
+  .auth-stagger > *:nth-child(5) { animation-delay: 320ms; }
+
+  /* ── Glassmorphism card ── */
+  .auth-card-glass {
+    background: rgba(255, 255, 255, 0.72);
+    backdrop-filter: blur(20px) saturate(1.6);
+    -webkit-backdrop-filter: blur(20px) saturate(1.6);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow:
+      0 1px 2px rgba(15, 23, 42, 0.04),
+      0 4px 16px rgba(15, 23, 42, 0.06),
+      0 12px 40px rgba(124, 58, 237, 0.06);
+  }
+  .dark .auth-card-glass {
+    background: rgba(18, 17, 26, 0.55);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow:
+      0 1px 2px rgba(0, 0, 0, 0.2),
+      0 4px 16px rgba(0, 0, 0, 0.25),
+      0 12px 40px rgba(124, 58, 237, 0.12);
+  }
+
+  /* ── Orb glow ── */
+  @keyframes auth-orb-breathe {
+    0%, 100% { transform: scale(1); opacity: 0.7; }
+    50%      { transform: scale(1.12); opacity: 1; }
+  }
+  @keyframes auth-orb-ring-pulse {
+    0%, 100% { opacity: 0.2; transform: scale(1); }
+    50%      { opacity: 0.5; transform: scale(1.05); }
+  }
+
+  /* ── Badge shimmer ── */
+  @keyframes auth-badge-shimmer {
+    0%   { background-position: -200% center; }
+    100% { background-position: 200% center; }
+  }
 }
