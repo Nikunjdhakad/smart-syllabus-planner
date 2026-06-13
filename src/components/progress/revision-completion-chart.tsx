@@ -2,6 +2,7 @@
 
 import { Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 import type { RevisionListResponse } from "@/types/revision";
+import { ChartTooltip } from "@/components/progress/chart-tooltip";
 
 const COLORS = ["#10B981", "#94A3B8", "#EF4444"];
 
@@ -33,15 +34,14 @@ export function RevisionCompletionChart({ revisions }: Props) {
         <ResponsiveContainer width="100%" height={220}>
           <PieChart>
             <Pie data={chartData} cx="50%" cy="50%" innerRadius={55} outerRadius={85} paddingAngle={3} dataKey="value">
-              {chartData.map((entry, i) => (
-                <Cell key={entry.name}
-                  fill={entry.name === "Completed" ? COLORS[0] : entry.name === "Upcoming" ? COLORS[1] : COLORS[2]} />
+              {chartData.map((entry) => (
+                <Cell
+                  key={entry.name}
+                  fill={entry.name === "Completed" ? COLORS[0] : entry.name === "Upcoming" ? COLORS[1] : COLORS[2]}
+                />
               ))}
             </Pie>
-            <Tooltip
-              formatter={(v: number) => [v, "revisions"]}
-              contentStyle={{ borderRadius: "12px", border: "1px solid var(--border)", background: "var(--card)", color: "var(--foreground)", fontSize: "12px", boxShadow: "0 4px 16px rgba(0,0,0,0.08)" }}
-            />
+            <Tooltip content={<ChartTooltip unit="revisions" />} />
             <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: "12px", color: "var(--foreground)" }} />
           </PieChart>
         </ResponsiveContainer>

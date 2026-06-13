@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation";
 import type { LucideIcon } from "lucide-react";
 import {
   BookOpen,
-  Bot,
   CalendarDays,
   LayoutDashboard,
   LineChart,
@@ -27,7 +26,6 @@ export const sidebarNavItems: {
   { href: ROUTES.progress, label: "Progress", icon: LineChart },
   { href: ROUTES.revisions, label: "Revisions", icon: RotateCcw },
   { href: ROUTES.recovery, label: "Recovery Center", icon: ShieldAlert },
-  { href: ROUTES.assistant, label: "AI Assistant", icon: Bot },
 ];
 
 export function SidebarNav({
@@ -74,13 +72,6 @@ export function SidebarNav({
               strokeWidth={active ? 2.25 : 2}
             />
             <span className="truncate">{label}</span>
-            {label === "AI Assistant" && (
-              <span
-                className="ml-auto flex size-2 rounded-full bg-primary/70"
-                style={{ boxShadow: "0 0 6px oklch(0.68 0.22 270 / 0.8)" }}
-                aria-hidden
-              />
-            )}
           </Link>
         );
       })}

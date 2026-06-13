@@ -2,6 +2,7 @@
 
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import type { DailyCompletionPoint } from "@/types/progress";
+import { ChartTooltip } from "@/components/progress/chart-tooltip";
 
 type Props = { dailyCompletions: DailyCompletionPoint[] };
 
@@ -34,8 +35,7 @@ export function DailyCompletionsChart({ dailyCompletions }: Props) {
             <XAxis dataKey="date" tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} interval="preserveStartEnd" />
             <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} />
             <Tooltip
-              contentStyle={{ borderRadius: "12px", border: "1px solid var(--border)", background: "var(--card)", color: "var(--foreground)", fontSize: "12px", boxShadow: "0 4px 16px rgba(0,0,0,0.08)" }}
-              formatter={(v: number) => [v, "tasks completed"]}
+              content={<ChartTooltip unit="tasks" />}
             />
             <Area type="monotone" dataKey="Tasks" stroke="#7C3AED" strokeWidth={2.5} fill="url(#compGrad)" dot={false} activeDot={{ r: 5, fill: "#7C3AED" }} />
           </AreaChart>

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Bot, Target, ShieldAlert, RotateCcw, Sparkles, Brain } from "lucide-react";
 import Link from "next/link";
 import { ROUTES } from "@/lib/constants";
+import { useCopilot } from "@/components/copilot/copilot-store";
 
 interface CoachSummary {
   readinessScore: number;
@@ -19,6 +20,7 @@ interface CoachSummary {
 export function StudyCoachCard() {
   const [data, setData] = useState<CoachSummary | null>(null);
   const [loading, setLoading] = useState(true);
+  const { setOpen } = useCopilot();
 
   useEffect(() => {
     fetch("/api/agent/summary")
@@ -142,13 +144,14 @@ export function StudyCoachCard() {
             View Revisions
           </Link>
         )}
-        <Link
-          href={ROUTES.assistant}
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
           className="flex items-center gap-1.5 rounded-lg bg-primary/10 px-3 py-2 text-xs font-medium text-primary hover:bg-primary/20 transition-colors"
         >
           <Bot className="size-3" />
-          Open Assistant
-        </Link>
+          Open Copilot
+        </button>
       </div>
     </div>
   );

@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import {
   BookOpen,
-  Bot,
   CalendarDays,
   CheckCircle2,
   Flame,
@@ -202,7 +201,6 @@ export default async function DashboardPage() {
             <FeatureCard href={ROUTES.progress} icon={LineChart} title="Progress" description="Track completion and analytics." accentIndex={2} />
             <FeatureCard href={ROUTES.revisions} icon={RotateCcw} title="Revisions" description="Spaced repetition system." accentIndex={3} />
             <FeatureCard href={ROUTES.recovery} icon={ShieldAlert} title="Recovery Center" description="Recover missed tasks intelligently." accentIndex={4} />
-            <FeatureCard href={ROUTES.assistant} icon={Bot} title="AI Assistant" description="Chat for study guidance and plans." accentIndex={0} />
           </div>
         </section>
       </div>
