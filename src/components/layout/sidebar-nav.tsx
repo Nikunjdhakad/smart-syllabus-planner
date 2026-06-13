@@ -10,10 +10,17 @@ import {
   LineChart,
   RotateCcw,
   ShieldAlert,
+  MessageSquare,
 } from "lucide-react";
 
 import { ROUTES } from "@/lib/constants";
 import { cn } from "@/lib/utils";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export const sidebarNavItems: {
   href: string;
@@ -29,9 +36,11 @@ export const sidebarNavItems: {
 ];
 
 export function SidebarNav({
+  collapsed = false,
   onNavigate,
   className,
 }: {
+  collapsed?: boolean;
   onNavigate?: () => void;
   className?: string;
 }) {
@@ -39,42 +48,62 @@ export function SidebarNav({
 
   return (
     <nav className={cn("flex flex-col gap-0.5", className)} aria-label="Main navigation">
-      {sidebarNavItems.map(({ href, label, icon: Icon }) => {
-        const active = pathname === href || pathname.startsWith(`${href}/`);
+      <TooltipProvider delayDuration={0}>
+        {sidebarNavItems.map(({ href, label, icon: Icon }) => {
+          const active = pathname === href || pathname.startsWith(`${href}/`);
 
-        return (
-          <Link
-            key={href}
-            href={href}
-            onClick={onNavigate}
-            className={cn(
-              "group relative flex items-center gap-3 rounded-[11px] px-3 py-2.5",
-              "text-[0.875rem] font-medium transition-all duration-200",
-              active
-                ? "bg-primary/10 text-primary dark:bg-primary/15 dark:text-primary"
-                : "text-foreground/60 hover:bg-muted hover:text-foreground dark:hover:bg-white/6",
-            )}
-          >
-            {active && (
-              <span
-                className="absolute left-0 top-1/2 h-5 w-0.5 -translate-y-1/2 rounded-full bg-primary"
-                style={{ boxShadow: "0 0 8px oklch(0.68 0.22 270 / 0.6)" }}
-                aria-hidden
-              />
-            )}
-      <Icon
+          const linkContent = (
+            <Link
+              key={href}
+              href={href}
+              onClick={onNavigate}
               className={cn(
-                "size-[1.0625rem] shrink-0 transition-colors duration-200",
+                "group relative flex items-center gap-3 rounded-[11px] px-3 py-2.5",
+                "text-[0.875rem] font-medium transition-all duration-200",
+                collapsed ? "justify-center" : "",
                 active
-                  ? "text-primary"
-                  : "text-foreground/50 group-hover:text-foreground/70",
+                  ? "bg-primary/10 text-primary dark:bg-primary/15 dark:text-primary"
+                  : "text-foreground/60 hover:bg-muted hover:text-foreground dark:hover:bg-white/6",
               )}
-              strokeWidth={active ? 2.25 : 2}
-            />
-            <span className="truncate">{label}</span>
-          </Link>
-        );
-      })}
+            >
+              {active && !collapsed && (
+                <span
+                  className="absolute left-0 top-1/2 h-5 w-0.5 -translate-y-1/2 rounded-full bg-primary"
+                  style={{ boxShadow: "0 0 8px oklch(0.68 0.22 270 / 0.6)" }}
+                  aria-hidden
+                />
+              )}
+              <Icon
+                className={cn(
+                  "size-[1.0625rem] shrink-0 transition-colors duration-200",
+                  active
+                    ? "text-primary"
+                    : "text-foreground/50 group-hover:text-foreground/70",
+                )}
+                strokeWidth={active ? 2.25 : 2}
+              />
+              {!collapsed && (
+                <span className="truncate transition-opacity duration-300">{label}</span>
+              )}
+            </Link>
+          );
+
+          if (collapsed) {
+            return (
+              <Tooltip key={href}>
+                <TooltipTrigger asChild>
+                  {linkContent}
+                </TooltipTrigger>
+                <TooltipContent side="right" className="font-medium">
+                  {label}
+                </TooltipContent>
+              </Tooltip>
+            );
+          }
+
+          return linkContent;
+        })}
+      </TooltipProvider>
     </nav>
   );
 }

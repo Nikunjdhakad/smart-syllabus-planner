@@ -1,19 +1,17 @@
 import type { Metadata } from "next";
 
 import { DashboardShell } from "@/components/layout/dashboard-shell";
-import { SyllabusManager } from "@/components/syllabus/syllabus-manager";
+import { SyllabusIntelligenceCenter } from "@/components/syllabus/syllabus-intelligence-center";
 
-export const metadata: Metadata = { title: "Syllabus" };
+export const metadata: Metadata = { title: "Syllabus Intelligence Center" };
 
 export default function SyllabusPage() {
   return (
     <DashboardShell
-      title="Syllabus"
-      description="Upload PDFs, images, or paste text. AI extracts subjects and topics automatically."
+      title="Syllabus Intelligence Center"
+      description="Transform raw syllabus documents into structured learning roadmaps"
     >
-      <div className="page-enter">
-        <SyllabusManager />
-      </div>
+      <SyllabusIntelligenceCenter />
     </DashboardShell>
   );
 }

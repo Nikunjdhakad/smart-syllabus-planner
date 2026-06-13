@@ -1,10 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useState, useMemo } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import { AlertCircle, CalendarClock, Check, CheckCircle2, Loader2, RotateCcw, Sparkles, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { StatCard } from "@/components/shared/stat-card";
+import { FilterBadge } from "@/components/shared/filter-badge";
+import { getRevisionFilter, filterRevisionsByStatus } from "@/lib/filter-utils";
 import { cn } from "@/lib/utils";
 import type { RevisionItem, RevisionListResponse } from "@/types/revision";
 
@@ -82,18 +85,16 @@ function RevisionListBlock({ title, items, actingId, onComplete, onSkip, empty }
 
 export function RevisionManager() {
   const searchParams = useSearchParams();
-  const statusFilter = searchParams.get("status");
+  const router = useRouter();
+  
+  // Get active filter from URL
+  const activeFilter = getRevisionFilter(searchParams);
   
   const [buckets, setBuckets] = useState<RevisionListResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [actingId, setActingId] = useState<string | null>(null);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
-  
-  const clearFilter = () => {
-    window.history.pushState({}, "", "/revisions");
-    window.location.reload();
-  };
 
   const load = useCallback(async () => {
     const r = await fetch("/api/revisions");
@@ -135,6 +136,33 @@ export function RevisionManager() {
     } finally { setGenerating(false); }
   }
 
+  // Data processing - MUST be before early return to maintain hook order
+  const data = buckets ?? { upcoming: [], missed: [], completed: [], total: 0 };
+  
+  // Flatten all revisions for filtering
+  const allRevisions = useMemo(
+    () => [...data.upcoming, ...data.missed, ...data.completed],
+    [data.upcoming, data.missed, data.completed]
+  );
+  
+  // Apply filter using filter utility
+  const filteredRevisions = useMemo(
+    () => filterRevisionsByStatus(allRevisions, activeFilter),
+    [allRevisions, activeFilter]
+  );
+  
+  // Group filtered revisions back into buckets
+  const filteredData = useMemo(() => {
+    if (!activeFilter) return data;
+    
+    return {
+      upcoming: filteredRevisions.filter((r) => r.displayStatus === "scheduled" && new Date(r.dueDate) >= new Date()),
+      missed: filteredRevisions.filter((r) => r.displayStatus === "missed" || r.displayStatus === "skipped" || (r.displayStatus === "scheduled" && new Date(r.dueDate) < new Date())),
+      completed: filteredRevisions.filter((r) => r.displayStatus === "completed"),
+      total: data.total,
+    };
+  }, [activeFilter, filteredRevisions, data]);
+
   if (loading) {
     return (
       <div className="space-y-6">
@@ -167,38 +195,15 @@ export function RevisionManager() {
     );
   }
 
-  const data = buckets ?? { upcoming: [], missed: [], completed: [], total: 0 };
-  
-  // Apply filter
-  const filteredData = statusFilter
-    ? {
-        upcoming: statusFilter === "upcoming" ? data.upcoming : [],
-        missed: statusFilter === "missed" ? data.missed : [],
-        completed: statusFilter === "completed" ? data.completed : [],
-        total: data.total,
-      }
-    : data;
-
   return (
     <div className="page-enter space-y-6">
-      {/* Filter indicator */}
-      {statusFilter && (
-        <div className="flex items-center justify-between gap-3 rounded-card border border-primary/20 bg-primary/8 px-4 py-3">
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-medium">Showing:</span>
-            <span className="rounded-chip border border-primary/25 bg-primary/15 px-2.5 py-1 text-sm font-semibold text-primary capitalize">
-              {statusFilter} Revisions
-            </span>
-          </div>
-          <button
-            type="button"
-            onClick={clearFilter}
-            className="flex items-center gap-1.5 rounded-lg border border-border/60 bg-card px-3 py-1.5 text-sm font-medium transition-colors hover:border-primary/30 hover:bg-primary/10"
-          >
-            <X className="size-3.5" />
-            Clear filter
-          </button>
-        </div>
+      {/* FilterBadge - Show active filter */}
+      {activeFilter && (
+        <FilterBadge
+          filterType="status"
+          filterValue={activeFilter}
+          onClear={() => router.push("/revisions")}
+        />
       )}
       
       {/* Header banner */}
@@ -227,23 +232,32 @@ export function RevisionManager() {
         </p>
       )}
 
-      {/* Stats bar */}
+      {/* Stats bar - Clickable StatCards */}
       <div className="grid grid-cols-3 gap-3">
-        {[
-          { label: "Upcoming", count: data.upcoming.length, icon: CalendarClock, color: "text-primary", href: "/revisions?status=upcoming" },
-          { label: "Missed", count: data.missed.length, icon: AlertCircle, color: "text-destructive", href: "/revisions?status=missed" },
-          { label: "Completed", count: data.completed.length, icon: CheckCircle2, color: "text-emerald-400", href: "/revisions?status=completed" },
-        ].map(({ label, count, icon: Icon, color, href }) => (
-          <a
-            key={label}
-            href={href}
-            className="group rounded-2xl border border-border/60 bg-card p-4 text-center transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md hover:border-primary/30 cursor-pointer"
-          >
-            <Icon className={cn("mx-auto mb-1.5 size-5 transition-transform duration-300 group-hover:scale-110", color)} />
-            <p className="text-2xl font-bold tabular-nums">{count}</p>
-            <p className="text-xs text-muted-foreground">{label}</p>
-          </a>
-        ))}
+        <StatCard
+          label="Upcoming"
+          value={String(data.upcoming.length)}
+          hint="Scheduled"
+          icon={CalendarClock}
+          accent="cyan"
+          onClick={() => router.push("/revisions?status=upcoming")}
+        />
+        <StatCard
+          label="Missed"
+          value={String(data.missed.length)}
+          hint="Needs attention"
+          icon={AlertCircle}
+          accent="rose"
+          onClick={() => router.push("/revisions?status=missed")}
+        />
+        <StatCard
+          label="Completed"
+          value={String(data.completed.length)}
+          hint="Finished"
+          icon={CheckCircle2}
+          accent="emerald"
+          onClick={() => router.push("/revisions?status=completed")}
+        />
       </div>
 
       {/* Columns */}

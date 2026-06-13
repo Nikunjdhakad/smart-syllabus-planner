@@ -33,3 +33,25 @@ export type {
   RecoveryRecommendation,
   RecoveryCharts,
 } from "@/types/recovery";
+
+export type {
+  SyllabusManagerState,
+  DerivedMetrics,
+  SubjectMetrics,
+  UploadMode,
+  UploadMethod,
+  ProcessingStage,
+  UploadHeroProps,
+  UploadExperienceProps,
+  AIProcessingTimelineProps,
+  SyllabusOverviewCardProps,
+  SubjectExplorerProps,
+  SubjectCardProps,
+  TopicChipProps,
+  AIInsightsPanelProps,
+  NextStepCTAProps,
+  FileUploadValidation,
+  UploadFormData,
+} from "@/types/syllabus-redesign";
+
+export { VALIDATION_CONSTANTS, isFileUploadMethod, isManualEntryMethod } from "@/types/syllabus-redesign";

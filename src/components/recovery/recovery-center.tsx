@@ -1,11 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { CheckCircle2, Loader2, RefreshCw, Sparkles, ArrowRight, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { StatCard } from "@/components/shared/stat-card";
+import { FilterBadge } from "@/components/shared/filter-badge";
+import { getRecoveryView } from "@/lib/filter-utils";
 import { MissedTasksList } from "@/components/recovery/missed-tasks-list";
 import { RecommendationsPanel } from "@/components/recovery/recommendations-panel";
 import { RecoveryKpiCards } from "@/components/recovery/recovery-kpi-cards";
@@ -36,7 +38,10 @@ function EmptyState() {
 
 export function RecoveryCenter({ initial }: { initial: RecoveryDashboardData }) {
   const searchParams = useSearchParams();
-  const viewFilter = searchParams.get("view");
+  const router = useRouter();
+  
+  // Get active view from URL
+  const activeView = getRecoveryView(searchParams);
   
   const [data, setData] = useState(initial);
   const [recovery, setRecovery] = useState<RecoverySummary | null>(initial.latestRecovery);
@@ -45,11 +50,6 @@ export function RecoveryCenter({ initial }: { initial: RecoveryDashboardData }) 
   const [applying, setApplying] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const hasOverdue = data.overdueCount > 0;
-  
-  const clearFilter = () => {
-    window.history.pushState({}, "", "/recovery");
-    window.location.reload();
-  };
 
   async function generate(apply: boolean) {
     if (!selectedPlanId) { setMessage({ type: "error", text: "No study plan with overdue tasks found." }); return; }
@@ -74,24 +74,13 @@ export function RecoveryCenter({ initial }: { initial: RecoveryDashboardData }) 
 
   return (
     <div className="space-y-6">
-      {/* Filter indicator */}
-      {viewFilter && (
-        <div className="flex items-center justify-between gap-3 rounded-card border border-primary/20 bg-primary/8 px-4 py-3">
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-medium">Showing:</span>
-            <span className="rounded-chip border border-primary/25 bg-primary/15 px-2.5 py-1 text-sm font-semibold text-primary capitalize">
-              {viewFilter === "missed" ? "Missed Tasks" : viewFilter === "plans" ? "Recovery Plans" : "Recovered Tasks"}
-            </span>
-          </div>
-          <button
-            type="button"
-            onClick={clearFilter}
-            className="flex items-center gap-1.5 rounded-lg border border-border/60 bg-card px-3 py-1.5 text-sm font-medium transition-colors hover:border-primary/30 hover:bg-primary/10"
-          >
-            <X className="size-3.5" />
-            Clear filter
-          </button>
-        </div>
+      {/* FilterBadge - Show active view */}
+      {activeView && (
+        <FilterBadge
+          filterType="view"
+          filterValue={activeView}
+          onClear={() => router.push("/recovery")}
+        />
       )}
       
       {/* Recovery Stats Cards */}
@@ -103,7 +92,7 @@ export function RecoveryCenter({ initial }: { initial: RecoveryDashboardData }) 
             hint="Tasks past due date"
             icon={<RefreshCw className="size-5" strokeWidth={2} />}
             accent="rose"
-            onClick={() => window.location.href = "/recovery?view=missed"}
+            onClick={() => router.push("/recovery?view=missed")}
           />
           <StatCard
             label="Recovery plans"
@@ -111,7 +100,7 @@ export function RecoveryCenter({ initial }: { initial: RecoveryDashboardData }) 
             hint={recovery ? "Active recovery plan" : "No plan generated"}
             icon={<Sparkles className="size-5" strokeWidth={2} />}
             accent="primary"
-            onClick={() => window.location.href = "/recovery?view=plans"}
+            onClick={() => router.push("/recovery?view=plans")}
           />
           <StatCard
             label="Recovered tasks"
@@ -119,7 +108,7 @@ export function RecoveryCenter({ initial }: { initial: RecoveryDashboardData }) 
             hint="Tasks rescheduled"
             icon={<CheckCircle2 className="size-5" strokeWidth={2} />}
             accent="emerald"
-            onClick={() => window.location.href = "/recovery?view=recovered"}
+            onClick={() => router.push("/recovery?view=recovered")}
           />
         </section>
       )}
@@ -177,12 +166,12 @@ export function RecoveryCenter({ initial }: { initial: RecoveryDashboardData }) 
       {!hasOverdue && !recovery && <EmptyState />}
 
       {/* Missed tasks - show only if view=missed or no filter */}
-      {data.overdueTasks.length > 0 && (!viewFilter || viewFilter === "missed") && (
+      {data.overdueTasks.length > 0 && (!activeView || activeView === "missed") && (
         <MissedTasksList tasks={data.overdueTasks} />
       )}
 
       {/* Recovery details - show only if view=plans/recovered or no filter */}
-      {recovery && (!viewFilter || viewFilter === "plans" || viewFilter === "recovered") && (
+      {recovery && (!activeView || activeView === "plans" || activeView === "recovered") && (
         <div className="space-y-6">
           {/* Header */}
           <div className="flex flex-wrap items-center justify-between gap-2">
@@ -202,11 +191,11 @@ export function RecoveryCenter({ initial }: { initial: RecoveryDashboardData }) 
 
           <RecoveryKpiCards recovery={recovery} />
           
-          {(!viewFilter || viewFilter === "plans") && (
+          {(!activeView || activeView === "plans") && (
             <RecommendationsPanel recommendations={recovery.recommendations} />
           )}
           
-          {(!viewFilter || viewFilter === "recovered") && (
+          {(!activeView || activeView === "recovered") && (
             <RecoveryTimeline movedTasks={recovery.movedTasks} schedulePreview={recovery.schedulePreview} />
           )}
 
