@@ -624,4 +624,65 @@
     0%   { background-position: -200% center; }
     100% { background-position: 200% center; }
   }
+
+  /* ═══════════════════════════════════════════════════════════════
+     DASHBOARD — Mission Control layout
+     ═══════════════════════════════════════════════════════════════ */
+
+  /* ── Hero card glow ── */
+  .dash-hero-glow {
+    background:
+      radial-gradient(ellipse 60% 80% at 20% 50%, rgba(124,58,237,0.12) 0%, transparent 60%),
+      radial-gradient(ellipse 40% 60% at 80% 30%, rgba(6,182,212,0.08) 0%, transparent 50%);
+  }
+  .dark .dash-hero-glow {
+    background:
+      radial-gradient(ellipse 60% 80% at 20% 50%, rgba(124,58,237,0.22) 0%, transparent 60%),
+      radial-gradient(ellipse 40% 60% at 80% 30%, rgba(6,182,212,0.14) 0%, transparent 50%);
+  }
+
+  /* ── Score ring animation ── */
+  @keyframes dash-ring-fill {
+    from { stroke-dashoffset: var(--ring-circumference, 283); }
+    to   { stroke-dashoffset: var(--ring-offset, 0); }
+  }
+  .dash-ring-animate {
+    animation: dash-ring-fill 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.3s both;
+  }
+
+  /* ── Score number count-in ── */
+  @keyframes dash-score-in {
+    from { opacity: 0; transform: scale(0.8) translateY(8px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
+  }
+  .dash-score-animate {
+    animation: dash-score-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.4s both;
+  }
+
+  /* ── Section entrance stagger ── */
+  .dash-stagger > * {
+    animation: fade-in-up 0.45s ease-out both;
+  }
+  .dash-stagger > *:nth-child(1) { animation-delay: 0ms; }
+  .dash-stagger > *:nth-child(2) { animation-delay: 80ms; }
+  .dash-stagger > *:nth-child(3) { animation-delay: 160ms; }
+  .dash-stagger > *:nth-child(4) { animation-delay: 240ms; }
+  .dash-stagger > *:nth-child(5) { animation-delay: 320ms; }
+  .dash-stagger > *:nth-child(6) { animation-delay: 400ms; }
+  .dash-stagger > *:nth-child(7) { animation-delay: 480ms; }
+
+  /* ── Mission card left accent ── */
+  .dash-mission-accent {
+    border-left: 3px solid var(--primary);
+    background: linear-gradient(90deg, rgba(124,58,237,0.04) 0%, transparent 40%);
+  }
+  .dark .dash-mission-accent {
+    background: linear-gradient(90deg, rgba(124,58,237,0.08) 0%, transparent 40%);
+  }
+
+  /* ── Pulsing dot (exam countdown) ── */
+  @keyframes dash-pulse-dot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50%      { opacity: 0.5; transform: scale(1.4); }
+  }
 }
