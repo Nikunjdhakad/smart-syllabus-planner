@@ -74,18 +74,23 @@ export async function resetPasswordWithToken(
 /**
  * Send a password reset email via Nodemailer (Gmail SMTP).
  * Falls back to console logging when SMTP_USER/SMTP_PASS are not configured.
+ * 
+ * @throws Error if email sending fails (in production mode)
  */
 export async function sendPasswordResetEmail(
   email: string,
   resetToken: string,
-): Promise<void> {
+): Promise<{ success: boolean; error?: string; messageId?: string }> {
   const { sendEmail } = await import("@/lib/email/send-email");
 
   const baseUrl =
     process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
   const resetUrl = `${baseUrl}/reset-password?token=${resetToken}`;
 
-  const sent = await sendEmail({
+  console.log(`[Password Reset] 🔑 Sending reset email to: ${email}`);
+  console.log(`[Password Reset] Reset URL: ${resetUrl}`);
+
+  const result = await sendEmail({
     to: email,
     subject: "Reset your Smart Syllabus Planner password",
     html: `
@@ -141,15 +146,33 @@ export async function sendPasswordResetEmail(
 </html>`,
   });
 
-  if (!sent) {
-    // Fallback: log to console in development
-    console.log("\n" + "=".repeat(60));
-    console.log("🔑 PASSWORD RESET LINK (no email provider configured)");
-    console.log("=".repeat(60));
-    console.log(`Email: ${email}`);
-    console.log(`Link:  ${resetUrl}`);
-    console.log(`Expires in ${RESET_TOKEN_EXPIRY_MINUTES} minutes`);
-    console.log("=".repeat(60) + "\n");
+  if (!result.success) {
+    console.error(`[Password Reset] ❌ Failed to send email to: ${email}`);
+    console.error(`[Password Reset] Error: ${result.error}`);
+    
+    // In development, show the reset link in console
+    if (process.env.NODE_ENV !== "production") {
+      console.log("\n" + "=".repeat(60));
+      console.log("🔑 PASSWORD RESET LINK (email sending failed - development fallback)");
+      console.log("=".repeat(60));
+      console.log(`Email: ${email}`);
+      console.log(`Link:  ${resetUrl}`);
+      console.log(`Expires in ${RESET_TOKEN_EXPIRY_MINUTES} minutes`);
+      console.log("=".repeat(60) + "\n");
+    }
+    
+    return {
+      success: false,
+      error: result.error,
+    };
   }
+
+  console.log(`[Password Reset] ✅ Reset email sent successfully to: ${email}`);
+  console.log(`[Password Reset] Message ID: ${result.messageId}`);
+
+  return {
+    success: true,
+    messageId: result.messageId,
+  };
 }
 
