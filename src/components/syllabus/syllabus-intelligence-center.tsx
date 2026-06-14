@@ -9,6 +9,7 @@ import {
   FileImage,
   FileText,
   Loader2,
+  MoreVertical,
   PenLine,
   Sparkles,
   Star,
@@ -17,10 +18,20 @@ import {
   TrendingUp,
   Brain,
   CheckCircle2,
+  Eye,
+  Trash2,
+  CalendarPlus,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import type {
   ExtractionStatus,
@@ -63,6 +74,8 @@ export function SyllabusIntelligenceCenter() {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [deleteConfirmation, setDeleteConfirmation] = useState<{ syllabusId: string; title: string } | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   // Form fields
   const [title, setTitle] = useState("");
@@ -208,6 +221,35 @@ export function SyllabusIntelligenceCenter() {
       setMessage({ type: "error", text: error instanceof Error ? error.message : "Upload failed" });
     } finally {
       setUploading(false);
+    }
+  }
+
+  async function handleDeleteSyllabus(syllabusId: string) {
+    setDeleting(true);
+    try {
+      const response = await fetch(`/api/syllabus/${encodeURIComponent(syllabusId)}`, {
+        method: "DELETE",
+      });
+      if (!response.ok) throw new Error(await readApiError(response));
+      
+      // Remove from local state
+      setSyllabi((prev) => prev.filter((s) => s.syllabusId !== syllabusId));
+      setSubjectsBySyllabus((prev) => {
+        const updated = { ...prev };
+        delete updated[syllabusId];
+        return updated;
+      });
+      
+      if (expandedSyllabusId === syllabusId) {
+        setExpandedSyllabusId(null);
+      }
+      
+      setMessage({ type: "success", text: "Syllabus deleted successfully" });
+    } catch (error) {
+      setMessage({ type: "error", text: error instanceof Error ? error.message : "Delete failed" });
+    } finally {
+      setDeleting(false);
+      setDeleteConfirmation(null);
     }
   }
 
@@ -505,20 +547,61 @@ export function SyllabusIntelligenceCenter() {
 
               return (
                 <div key={item.syllabusId} className="rounded-xl border border-border/60 bg-card overflow-hidden">
-                  <button
-                    onClick={() => setExpandedSyllabusId(expanded ? null : item.syllabusId)}
-                    className="w-full p-5 text-left space-y-3 hover:bg-muted/30 transition-colors"
-                  >
+                  <div className="p-5 space-y-3">
                     <div className="flex items-start justify-between gap-3">
-                      <h3 className="font-semibold line-clamp-1">{item.title}</h3>
-                      <ChevronDown className={cn("size-5 text-muted-foreground transition-transform shrink-0", expanded && "rotate-180")} />
+                      <button
+                        onClick={() => setExpandedSyllabusId(expanded ? null : item.syllabusId)}
+                        className="flex-1 text-left"
+                      >
+                        <h3 className="font-semibold line-clamp-1 hover:text-primary transition-colors">{item.title}</h3>
+                      </button>
+                      
+                      <div className="flex items-center gap-2 shrink-0">
+                        <button
+                          onClick={() => setExpandedSyllabusId(expanded ? null : item.syllabusId)}
+                          className="p-1.5 hover:bg-muted/50 rounded-lg transition-colors"
+                        >
+                          <ChevronDown className={cn("size-5 text-muted-foreground transition-transform", expanded && "rotate-180")} />
+                        </button>
+                        
+                        <DropdownMenu>
+                          <DropdownMenuTrigger className="p-1.5 hover:bg-muted/50 rounded-lg transition-colors">
+                            <MoreVertical className="size-5 text-muted-foreground" />
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-48">
+                            <DropdownMenuItem
+                              onClick={() => setExpandedSyllabusId(expanded ? null : item.syllabusId)}
+                            >
+                              <Eye className="size-4" />
+                              View Details
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => router.push("/planner")}
+                              disabled={item.extractionStatus !== "completed"}
+                            >
+                              <CalendarPlus className="size-4" />
+                              Generate Study Plan
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              variant="destructive"
+                              onClick={() => setDeleteConfirmation({ syllabusId: item.syllabusId, title: item.title })}
+                            >
+                              <Trash2 className="size-4" />
+                              Delete Syllabus
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
                     </div>
+                    
                     <div className="flex flex-wrap gap-2">
                       <Badge variant={item.extractionStatus === "completed" ? "outline" : item.extractionStatus === "failed" ? "destructive" : "default"}>
                         {item.extractionStatus}
                       </Badge>
                       <Badge variant="secondary">{item.sourceType}</Badge>
                     </div>
+                    
                     <div className="grid grid-cols-3 gap-3 text-center">
                       <div>
                         <p className="text-xs text-muted-foreground">Subjects</p>
@@ -533,7 +616,7 @@ export function SyllabusIntelligenceCenter() {
                         <p className="text-xs font-medium">{new Date(item.createdAt).toLocaleDateString()}</p>
                       </div>
                     </div>
-                  </button>
+                  </div>
 
                   {/* SECTION 6: Subject Explorer */}
                   {expanded && item.extractionStatus === "completed" && (
@@ -587,6 +670,54 @@ export function SyllabusIntelligenceCenter() {
             <Sparkles className="size-5" />
             Generate Study Plan
           </Button>
+        </div>
+      )}
+
+      {/* Delete Confirmation Dialog */}
+      {deleteConfirmation && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="relative w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-2xl">
+            <h3 className="text-xl font-bold mb-2">Delete Syllabus?</h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              This will permanently delete:
+            </p>
+            <ul className="text-sm text-muted-foreground mb-4 space-y-1 pl-5 list-disc">
+              <li>Syllabus: <span className="font-medium text-foreground">{deleteConfirmation.title}</span></li>
+              <li>All subjects associated with this syllabus</li>
+              <li>All topics associated with this syllabus</li>
+            </ul>
+            <p className="text-sm font-medium text-destructive mb-6">
+              This action cannot be undone.
+            </p>
+            <div className="flex gap-3">
+              <Button
+                variant="outline"
+                onClick={() => setDeleteConfirmation(null)}
+                disabled={deleting}
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={() => handleDeleteSyllabus(deleteConfirmation.syllabusId)}
+                disabled={deleting}
+                className="flex-1 gap-2"
+              >
+                {deleting ? (
+                  <>
+                    <Loader2 className="size-4 animate-spin" />
+                    Deleting...
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="size-4" />
+                    Delete
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
         </div>
       )}
     </div>
